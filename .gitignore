@@ -1,0 +1,9 @@
+venv/
+my-tavus-app/
+__pycache__/
+*.pyc
+.env
+config/secrets.env
+*.env
+config/*.env
+config/*.env.local
