@@ -13,8 +13,7 @@ services:
   frontend:
     build:
       context: ./my-tavus-app
-    command: npm run preview
-    volumes:
-      - ./my-tavus-app:/app
+    # 👇 ya no hace falta definir el command aquí,
+    # porque el Dockerfile del frontend tiene su propio CMD
     ports:
       - "3000:3000"
