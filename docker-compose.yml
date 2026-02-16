@@ -12,7 +12,7 @@ services:
   frontend:
     build:
       context: ./my-tavus-app
-    command: npm start
+    command: npm run preview
     volumes:
       - ./my-tavus-app:/app
     ports:
