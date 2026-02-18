@@ -17,7 +17,6 @@ jobs:
       - run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
-          pip install pytest   # 👈 aseguramos que esté
       - run: pytest tusommelier/tests
 
   frontend:
@@ -27,9 +26,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm ci --legacy-peer-deps   # 👈 agregamos flag
+      - run: npm ci --legacy-peer-deps
         working-directory: my-tavus-app
       - run: npm run build
         working-directory: my-tavus-app
-      - run: npm test -- --watchAll=false
+      - run: npm test
         working-directory: my-tavus-app
