@@ -7,7 +7,7 @@ import {
   useMeetingState,
   useScreenVideoTrack,
   useVideoTrack,
-  useAppMessage   // 👈 correcto
+  useAppMessage
 } from "@daily-co/daily-react";
 import { MicSelectBtn, CameraSelectBtn, ScreenShareButton } from "../device-select";
 import { useLocalScreenshare } from "../../hooks/use-local-screenshare";
@@ -18,10 +18,11 @@ import { AudioWave } from "../audio-wave";
 import styles from "./conversation.module.css";
 
 interface ConversationProps {
-  onLeave: () => void;
+  onLeave: (context?: string) => void;
   conversationUrl: string;
-  backendReply?: string;   // 👈 opcional: texto del backend
+  backendReply?: string;
   inactivityLimitSeconds?: number;
+  onSaveContext?: (context: string) => void;
 }
 
 const VideoPreview = React.memo(({ id }: { id: string }) => {
@@ -72,7 +73,7 @@ const MainVideo = React.memo(() => {
   if (!replicaId) {
     return (
       <div className={styles.waitingContainer}>
-        <p>Connecting...</p>
+        <p>Conectando con nuestro sommelier...</p>
       </div>
     );
   }
@@ -94,7 +95,7 @@ const MainVideo = React.memo(() => {
   );
 });
 
-export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply, inactivityLimitSeconds }: ConversationProps) => {
+export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply, inactivityLimitSeconds, onSaveContext }: ConversationProps) => {
   const { joinCall, leaveCall } = useCVICall();
   const meetingState = useMeetingState();
   const { hasMicError } = useDevices();
@@ -106,6 +107,7 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply
 
   const [lastActivity, setLastActivity] = useState<number>(() => Date.now());
   const [isClosedDueToInactivity, setIsClosedDueToInactivity] = useState(false);
+  const [conversationalContext, setConversationalContext] = useState<string>("");
 
   useEffect(() => {
     if (meetingState === "error") {
@@ -204,26 +206,33 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply
     const interval = setInterval(() => {
       const idleSeconds = (Date.now() - lastActivity) / 1000;
       if (idleSeconds > INACTIVITY_LIMIT) {
-        // Auto-close
+        // Auto-close por timeout
+        // Generar un contexto simple con timestamp (en versión real, vendría de Tavus API)
+        const contextData = {
+          timestamp: new Date().toISOString(),
+          reason: "inactivity_timeout",
+          lastActivityTime: new Date(lastActivity).toISOString(),
+        };
+        const contextStr = JSON.stringify(contextData);
+        setConversationalContext(contextStr);
+        
+        // Guardar el contexto si hay callback
+        if (onSaveContext) {
+          onSaveContext(contextStr);
+        }
+        
         leaveCall();
         setIsClosedDueToInactivity(true);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lastActivity, leaveCall, isClosedDueToInactivity]);
+  }, [lastActivity, leaveCall, isClosedDueToInactivity, onSaveContext]);
 
   const handleLeave = useCallback(() => {
     leaveCall();
-    onLeave();
-  }, [leaveCall, onLeave]);
-
-  const handleReopen = useCallback(() => {
-    // Reopen the same conversation URL and resume
-    joinCall({ url: conversationUrl });
-    setIsClosedDueToInactivity(false);
-    setLastActivity(Date.now());
-  }, [joinCall, conversationUrl]);
+    onLeave(conversationalContext || undefined);
+  }, [leaveCall, onLeave, conversationalContext]);
 
   // Retry / connection UI state
   const [isRetrying, setIsRetrying] = useState(false);
@@ -276,27 +285,27 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply
       <div className={styles.statusBar}>
         {meetingState === "joining-meeting" && (
           <div className={styles.statusBanner}>
-            <p>Connecting…</p>
+            <p>Conectando...</p>
           </div>
         )}
 
         {meetingState === "joined-meeting" && (
           <div className={styles.statusBannerConnected}>
-            <p>Connected</p>
+            <p>Conectado ✓</p>
           </div>
         )}
 
         {meetingState === "error" && (
           <div className={styles.errorBanner}>
             <p>
-              Connection error.
+              Error de conexión
               <button
                 type="button"
                 className={styles.retryButton}
                 onClick={handleRetry}
                 disabled={isRetrying}
               >
-                {isRetrying ? "Retrying…" : "Retry"}
+                {isRetrying ? "Intentando..." : "Reintentar"}
               </button>
             </p>
           </div>
@@ -307,14 +316,14 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply
         <div className={styles.statusBar}>
           <div className={styles.errorBanner}>
             <p>
-              Conversation closed due to inactivity.
+              La conversación ha finalizado por inactividad.
               <button
                 type="button"
-                onClick={handleReopen}
+                onClick={handleLeave}
                 className={styles.retryButton}
                 style={{ marginLeft: 12 }}
               >
-                Re-open
+                Cerrar sesión
               </button>
             </p>
           </div>

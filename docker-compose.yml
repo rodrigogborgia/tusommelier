@@ -39,6 +39,17 @@ services:
     environment:
       - FORCE_SSL=true
 
+  docker-gen:
+    image: jwilder/docker-gen:latest
+    container_name: tusommelier-dockergen
+    restart: always
+    volumes:
+      - /etc/nginx/certs:/etc/nginx/certs:rw
+      - /etc/nginx/vhost.d:/etc/nginx/vhost.d
+      - /usr/share/nginx/html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    command: -notify-sighup tusommelier-nginx -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
+
   acme-companion:
     image: nginxproxy/acme-companion:latest
     container_name: tusommelier-acme
@@ -49,6 +60,8 @@ services:
       - /usr/share/nginx/html:/usr/share/nginx/html
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      - NGINX_PROXY_CONTAINER=tusommelier-nginx   # 👈 clave para que encuentre el proxy
+      - NGINX_PROXY_CONTAINER=tusommelier-nginx
+      - NGINX_DOCKER_GEN_CONTAINER=tusommelier-dockergen
     depends_on:
       - nginx-proxy
+      - docker-gen

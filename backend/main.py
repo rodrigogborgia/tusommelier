@@ -32,6 +32,12 @@ client = OpenAI(api_key=api_key)
 async def conversation(request: Request):
     body = await request.json()
     user_input = body.get("text", "")
+    conversational_context = body.get("conversational_context", None)  # Contexto opcional
+
+    # Nota: En futuro, se podría usar conversational_context para mantener
+    # historial de conversaciones en sesiones múltiples
+    if conversational_context:
+        print(f"Reanudando conversación con contexto: {conversational_context[:100]}...")
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
