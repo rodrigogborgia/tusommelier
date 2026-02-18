@@ -48,5 +48,7 @@ services:
       - /etc/nginx/vhost.d:/etc/nginx/vhost.d
       - /usr/share/nginx/html:/usr/share/nginx/html
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - NGINX_PROXY_CONTAINER=tusommelier-nginx   # 👈 clave para que encuentre el proxy
     depends_on:
       - nginx-proxy
