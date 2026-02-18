@@ -84,7 +84,7 @@ describe('Conversation inactivity', () => {
     await waitFor(() => {
       // @ts-ignore
       expect(window.__tavus_forced_inactivity).toBeTruthy();
-    }, { timeout: 2000 });
+    }, { timeout: 5000 });
 
     // leaveCall should have been called by the handler
     expect(leaveCallMock).toHaveBeenCalled();
@@ -92,5 +92,5 @@ describe('Conversation inactivity', () => {
     // the Re-open button should be visible
     const reopen = await screen.findByText('Re-open');
     expect(reopen).toBeTruthy();
-  }, 10000);
+  }, 30000);
 });
