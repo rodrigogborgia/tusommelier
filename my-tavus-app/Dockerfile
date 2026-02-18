@@ -1,4 +1,4 @@
-# Usamos Node 20 porque Vite lo requiere
+# Etapa de build
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -6,10 +6,8 @@ WORKDIR /app
 # Copiamos package.json y package-lock.json primero para aprovechar cache
 COPY package*.json ./
 
-# Instalamos todas las dependencias, incluidas devDependencies (donde está Vite)
-# Usamos --legacy-peer-deps porque @testing-library/react requiere React 18
-# pero el proyecto usa React 19 (que es compatible)
-RUN npm install --include=dev --legacy-peer-deps
+# Instalamos dependencias
+RUN npm install --legacy-peer-deps
 
 # Copiamos el resto del código
 COPY . .
@@ -18,20 +16,17 @@ COPY . .
 RUN npm run build
 
 # -------------------------------
-# Etapa final: servidor liviano
+# Etapa final: servidor Nginx
 # -------------------------------
-FROM node:20-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+# Eliminamos la configuración default de Nginx
+RUN rm -rf /usr/share/nginx/html/*
 
-# Copiamos solo lo necesario del build
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package*.json ./
+# Copiamos el build generado
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Exponemos el puerto
-EXPOSE 3000
+# Exponemos el puerto 80
+EXPOSE 80
 
-# Servimos el build con Vite preview
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "3000"]
-
+# Nginx arranca automáticamente con la imagen base

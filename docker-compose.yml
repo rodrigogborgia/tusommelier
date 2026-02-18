@@ -11,7 +11,7 @@ services:
       - VIRTUAL_HOST=tusommeliervirtual.com
       - VIRTUAL_PATH=/api
       - LETSENCRYPT_HOST=tusommeliervirtual.com
-      - LETSENCRYPT_EMAIL=tuemail@ejemplo.com
+      - LETSENCRYPT_EMAIL=rodrigo@gamificagroup.com
 
   frontend:
     image: human2coach/tusommelier-frontend:latest
