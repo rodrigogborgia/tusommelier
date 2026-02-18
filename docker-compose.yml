@@ -1,19 +1,52 @@
 services:
   backend:
-    build:
-      context: ./backend
-    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000
-    volumes:
-      - ./backend:/app
+    image: human2coach/tusommelier-backend:latest
+    container_name: tusommelier-backend
+    restart: always
     env_file:
       - ./config/secrets.env
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
+    environment:
+      - VIRTUAL_HOST=tusommeliervirtual.com
+      - VIRTUAL_PATH=/api
+      - LETSENCRYPT_HOST=tusommeliervirtual.com
+      - LETSENCRYPT_EMAIL=tuemail@ejemplo.com
 
   frontend:
-    build:
-      context: ./my-tavus-app
-    # 👇 ya no hace falta definir el command aquí,
-    # porque el Dockerfile del frontend tiene su propio CMD
+    image: human2coach/tusommelier-frontend:latest
+    container_name: tusommelier-frontend
+    restart: always
+    expose:
+      - "3000"
+    environment:
+      - VIRTUAL_HOST=tusommeliervirtual.com
+      - LETSENCRYPT_HOST=tusommeliervirtual.com
+      - LETSENCRYPT_EMAIL=rodrigo@gamificagroup.com
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy:latest
+    container_name: tusommelier-nginx
+    restart: always
     ports:
-      - "3000:3000"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/nginx/certs:/etc/nginx/certs:rw
+      - /etc/nginx/vhost.d:/etc/nginx/vhost.d
+      - /usr/share/nginx/html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      - FORCE_SSL=true
+
+  acme-companion:
+    image: nginxproxy/acme-companion:latest
+    container_name: tusommelier-acme
+    restart: always
+    volumes:
+      - /etc/nginx/certs:/etc/nginx/certs:rw
+      - /etc/nginx/vhost.d:/etc/nginx/vhost.d
+      - /usr/share/nginx/html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - nginx-proxy

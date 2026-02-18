@@ -1,46 +1,53 @@
-# Node.js
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Node / React ---
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-
-# Build / dist
 dist/
 build/
 .cache/
 .out/
 
-# Environment variables
+# --- Lockfiles (mantener si usás npm ci) ---
+# Si querés reproducibilidad, dejá package-lock.json versionado.
+# Si preferís no subirlo, descomentá la siguiente línea:
+# package-lock.json
+
+# --- Environment variables ---
 .env
 *.env
 config/*.env
 config/*.env.local
 config/secrets.env
 
-# Logs
+# --- Logs ---
 *.log
 logs/
 *.pid
 *.seed
 *.pid.lock
 
-# Docker
+# --- Docker ---
 docker-compose.override.yml
 .docker/
 *.tar
 
-# IDE / Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Python (si tenés scripts auxiliares)
+# --- Python ---
 venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# --- Tests / Coverage ---
+coverage/
+*.cover
+*.lcov
