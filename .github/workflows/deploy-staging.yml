@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-push:
     name: Build and Push Docker image to GHCR
@@ -30,11 +34,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/tusommelier:staging-${{ github.sha }}
-
-      - name: Create or update staging deployment (environment)
-        uses: peter-evans/create-or-update-environment@v2
-        with:
-          environment: staging
-          reviewers: ''
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/tusommelier:staging-latest
+            ghcr.io/${{ github.repository_owner }}/tusommelier:staging-${{ github.sha }}
 
