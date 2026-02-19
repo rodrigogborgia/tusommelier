@@ -1,0 +1,36 @@
+/* ========================================
+   Estilos del Ejemplo de Avatar Interface
+   ======================================== */
+
+.headerTitle {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #6b0f1a;
+  font-family: "Antonio", "Segoe UI", sans-serif;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+@media (max-width: 480px) {
+  .headerTitle {
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+  }
+
+  .buttonGroup {
+    gap: 10px;
+  }
+}

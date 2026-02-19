@@ -1,0 +1,237 @@
+/* ========================================
+   Paleta de Colores - Espacio Sommelier
+   ======================================== */
+:root {
+  --color-primary-dark: #6b0f1a; /* Burgundy/Maroon */
+  --color-primary-light: #8b3a3a; /* Burgundy más claro */
+  --color-accent-gold: #c69c6d; /* Dorado cálido */
+  --color-accent-gold-light: #e0c097; /* Dorado más claro */
+  --color-bg-main: #faf3e0; /* Beige cálido */
+  --color-bg-secondary: #f5ead6; /* Beige más oscuro */
+  --color-text-dark: #3d2817; /* Marrón oscuro */
+  --color-text-light: #6b5d52; /* Marrón claro */
+  --color-white: #ffffff;
+  --color-shadow: rgba(107, 15, 26, 0.12); /* Sombra con tono burgundy */
+}
+
+/* ========================================
+   Container Principal
+   ======================================== */
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+
+  /* Fondo cálido de Espacio Sommelier */
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-main) 0%,
+    var(--color-bg-secondary) 100%
+  );
+
+  padding: 0;
+  font-family: "Antonio", "Segoe UI", sans-serif;
+  overflow: hidden;
+
+  /* Optimizaciones para iOS */
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ========================================
+   Header (Opcional)
+   ======================================== */
+.header {
+  width: 100%;
+  padding: 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Gradiente sutil en el header */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
+
+  border-bottom: 2px solid var(--color-accent-gold-light);
+  flex-shrink: 0;
+
+  /* Efecto de separación elegante */
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+/* ========================================
+   Contenido Principal - Avatar Centrado
+   ======================================== */
+.mainContent {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  min-height: 0; /* Importante para flex */
+  overflow: hidden;
+
+  /* Espaciado respecto a header y controles */
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.mainContent > * {
+  width: 100%;
+  height: 100%;
+  max-width: 600px;
+  aspect-ratio: 9/16;
+
+  /* Marco elegante dorado */
+  border: 3px solid var(--color-accent-gold-light);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-white);
+
+  /* Sombra sofisticada */
+  box-shadow: 0 12px 40px var(--color-shadow),
+    inset 0 0 20px rgba(224, 192, 151, 0.08);
+
+  object-fit: cover;
+}
+
+/* ========================================
+   Barra de Controles Inferior
+   ======================================== */
+.controlBar {
+  width: 100%;
+  padding: 1.25rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  /* Gradiente sutil con efecto flotante */
+  background: linear-gradient(
+    180deg,
+    rgba(250, 243, 224, 0.8) 0%,
+    rgba(245, 234, 214, 0.95) 100%
+  );
+
+  border-top: 2px solid var(--color-accent-gold-light);
+  box-shadow: 0 -2px 8px var(--color-shadow);
+
+  backdrop-filter: blur(8px);
+}
+
+/* Contenedor de los botones */
+.controlsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  /* Fondo de los controles */
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.75rem 1.25rem;
+  border-radius: 50px;
+
+  /* Marco dorado elegante */
+  border: 2px solid var(--color-accent-gold);
+  box-shadow: 0 4px 16px var(--color-shadow);
+
+  max-width: 95%;
+}
+
+/* ========================================
+   Responsive Design - Tablet
+   ======================================== */
+@media (min-width: 769px) {
+  .mainContent > * {
+    max-width: 800px;
+    aspect-ratio: 16/9;
+  }
+}
+
+/* ========================================
+   Responsive Design - Mobile Pequeño
+   ======================================== */
+@media (max-width: 480px) {
+  .header {
+    padding: 1rem 0.75rem;
+  }
+
+  .mainContent {
+    padding: 0.75rem;
+  }
+
+  .mainContent > * {
+    max-width: 100%;
+    aspect-ratio: 1/1;
+    max-height: 55vh;
+    border-width: 2px;
+    border-radius: 10px;
+  }
+
+  .controlBar {
+    padding: 1rem 0.75rem;
+    border-top-width: 2px;
+  }
+
+  .controlsContainer {
+    gap: 8px;
+    padding: 0.6rem 1rem;
+    border-radius: 40px;
+  }
+}
+
+/* ========================================
+   Responsive Design - Landscape
+   ======================================== */
+@media (max-height: 600px) {
+  .container {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .mainContent > * {
+    max-height: 70vh;
+    border-radius: 10px;
+  }
+
+  .header {
+    padding: 1rem 0.75rem;
+  }
+
+  .controlBar {
+    padding: 0.75rem;
+  }
+}
+
+/* ========================================
+   Animaciones de Entrada
+   ======================================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mainContent {
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.controlBar {
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+}
