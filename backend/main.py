@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import sentry_sdk
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from fastapi.responses import Response
 
 # Cargar variables de entorno
 load_dotenv(
@@ -36,6 +39,11 @@ if not api_key:
     raise ValueError("OPENAI_API_KEY not found in environment variables")
 
 client = OpenAI(api_key=api_key)
+
+# Initialize Sentry if DSN is provided
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+if SENTRY_DSN:
+    sentry_sdk.init(dsn=SENTRY_DSN)
 
 
 @app.post("/conversation")
@@ -78,6 +86,13 @@ async def conversation(request: Request):
 async def health_check():
     """Health check endpoint para verificar que el servidor está activo"""
     return {"status": "ok", "service": "tusommelier-backend"}
+
+
+@app.get("/metrics")
+async def metrics():
+    """Expose Prometheus metrics (requires prometheus_client)."""
+    data = generate_latest()
+    return Response(content=data, media_type=CONTENT_TYPE_LATEST)
 
 
 if __name__ == "__main__":

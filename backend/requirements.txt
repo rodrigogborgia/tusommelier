@@ -6,3 +6,4 @@ uvicorn
 openai
 pytest
 livekit-agents
+sentry-sdk>=1.17.0
