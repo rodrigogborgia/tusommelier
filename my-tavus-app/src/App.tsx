@@ -29,13 +29,15 @@ const App: React.FC = () => {
   }, []);
 
   // Determinar URL del backend basado en el entorno
+  // En producción (Nginx): `/api/` desde el mismo dominio
+  // En desarrollo local: `http://localhost:8000`
   const getBackendUrl = () => {
     const backendEnv = import.meta.env.VITE_BACKEND_URL;
     if (backendEnv) return backendEnv;
     
-    // En producción (Docker), usar el nombre del servicio
+    // En producción (Nginx + tusommeliervirtual.com): usar `/api/` en el mismo dominio
     if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-      return "http://backend:8000";
+      return "/api";
     }
     
     // En desarrollo local
