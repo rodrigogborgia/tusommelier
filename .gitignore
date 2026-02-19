@@ -42,6 +42,7 @@ docker-compose.override.yml
 
 # --- Python ---
 venv/
+.venv/              # <- agregado para ignorar virtualenvs creados con .venv
 __pycache__/
 *.pyc
 *.pyo
