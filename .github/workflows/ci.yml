@@ -62,6 +62,10 @@ jobs:
       - run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
+      - name: Run pip-audit
+        run: |
+          python -m pip install pip-audit
+          python -m pip_audit --progress spinner || true
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -70,6 +74,13 @@ jobs:
           if [ -f my-tavus-app/package-lock.json ] || [ -f my-tavus-app/package.json ]; then
             cd my-tavus-app
             npm ci --legacy-peer-deps || true
+            cd -
+          fi
+      - name: Run npm audit
+        run: |
+          if [ -f my-tavus-app/package.json ]; then
+            cd my-tavus-app
+            npm audit --audit-level=moderate || true
             cd -
           fi
       - name: Run CodeQL analysis
