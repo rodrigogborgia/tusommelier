@@ -5,8 +5,8 @@ services:
     restart: always
     env_file:
       - ./config/secrets.env
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
     environment:
       - VIRTUAL_HOST=tusommeliervirtual.com
       - VIRTUAL_PATH=/api

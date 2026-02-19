@@ -9,9 +9,15 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "config", 
 
 app = FastAPI()
 
-# Configuración de CORS
+# Configuración de CORS - Permite orígenes múltiples
 origins = [
-    "http://localhost:3000",  # habilitamos el frontend local
+    "http://localhost:3000",          # desarrollo local
+    "http://localhost:5173",          # vite dev server
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://frontend:3000",           # desde Docker
+    "https://tusommeliervirtual.com", # producción
+    "http://tusommeliervirtual.com",
 ]
 
 app.add_middleware(
@@ -59,3 +65,14 @@ async def conversation(request: Request):
 
     reply = response.choices[0].message.content
     return {"reply": reply}
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint para verificar que el servidor está activo"""
+    return {"status": "ok", "service": "tusommelier-backend"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

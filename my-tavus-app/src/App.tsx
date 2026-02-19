@@ -14,6 +14,22 @@ const App: React.FC = () => {
   const [conversationalContext, setConversationalContext] = useState<string | null>(null);
   const [hasContextAvailable, setHasContextAvailable] = useState(false);
 
+  // Determinar URL del backend basado en el entorno
+  const getBackendUrl = () => {
+    const backendEnv = import.meta.env.VITE_BACKEND_URL;
+    if (backendEnv) return backendEnv;
+    
+    // En producción (Docker), usar el nombre del servicio
+    if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+      return "http://backend:8000";
+    }
+    
+    // En desarrollo local
+    return "http://localhost:8000";
+  };
+
+  const BACKEND_URL = getBackendUrl();
+
   // Verificar si existe contexto guardado al montar
   useEffect(() => {
     const savedContext = getConversationalContext();
@@ -26,11 +42,19 @@ const App: React.FC = () => {
   const startConversation = async (useContext: boolean = false) => {
     try {
       // 1. Llamar al backend para obtener respuesta del LLM
-      const backendResponse = await fetch("http://localhost:8000/conversation", {
+      const backendResponse = await fetch(`${BACKEND_URL}/conversation`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: "Hola, recomendame un buen corte de carne argentina" }),
       });
+
+      if (!backendResponse.ok) {
+        throw new Error(`Error del backend: ${backendResponse.status} ${backendResponse.statusText}`);
+      }
+
+      if (!backendResponse.ok) {
+        throw new Error(`Error del backend: ${backendResponse.status} ${backendResponse.statusText}`);
+      }
 
       const backendData = await backendResponse.json();
       console.log("Respuesta del backend:", backendData.reply);
@@ -54,7 +78,8 @@ const App: React.FC = () => {
         setHasContextAvailable(false);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error en startConversation:", err);
+      alert(`Error: ${err instanceof Error ? err.message : "No se pudo conectar al backend"}`);
     }
   };
 
