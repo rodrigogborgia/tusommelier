@@ -2,6 +2,7 @@ import os
 import socket
 from dotenv import load_dotenv
 
+
 class LiveKitClient:
     def __init__(self):
         load_dotenv(dotenv_path=os.path.join("config", "secrets.env"))

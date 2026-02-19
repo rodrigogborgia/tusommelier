@@ -1,6 +1,7 @@
 from src.livekit_client import LiveKitClient
 from src.tavus_client import TavusClient
 
+
 class Pipeline:
     def __init__(self):
         self.livekit = LiveKitClient()
