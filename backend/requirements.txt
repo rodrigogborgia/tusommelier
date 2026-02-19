@@ -1,6 +1,6 @@
 requests>=2.32.4
 python-dotenv==1.0.1
-PyYAML==6.0.2
+PyYAML==6.0.3
 fastapi
 uvicorn
 openai
