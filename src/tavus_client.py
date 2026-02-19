@@ -3,6 +3,7 @@ import requests
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 
+
 class TavusClient:
     def __init__(self):
         # Cargar secrets.env desde config/
@@ -15,44 +16,41 @@ class TavusClient:
 
     def test_connection(self) -> bool:
         try:
-            headers = {
-                "Content-Type": "application/json",
-                "x-api-key": self.api_key
-            }
+            headers = {"Content-Type": "application/json", "x-api-key": self.api_key}
             response = requests.get(
-                f"{self.api_url}/videos",
-                headers=headers,
-                timeout=10
+                f"{self.api_url}/videos", headers=headers, timeout=10
             )
             # Log status code only, not response body (may contain sensitive data)
             if response.status_code != 200:
-                print(f"[WARNING] Tavus connection failed with status: {response.status_code}")
+                print(
+                    "[WARNING] Tavus connection failed with status: "
+                    f"{response.status_code}"
+                )
             return response.status_code == 200
         except Exception as e:
             print(f"Error en Tavus: {e}")
             return False
 
-    def create_conversation(self, context: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+    def create_conversation(
+        self, context: Optional[Dict[str, Any]] = None
+    ) -> Optional[Dict[str, Any]]:
         payload: Dict[str, Any] = {
             "properties": {
                 "max_call_duration": 7200,
                 "participant_left_timeout": 120,
-                "participant_absent_timeout": 120
+                "participant_absent_timeout": 120,
             },
-            "conversational_context": context or {}
+            "conversational_context": context or {},
         }
 
-        headers = {
-            "Content-Type": "application/json",
-            "x-api-key": self.api_key
-        }
+        headers = {"Content-Type": "application/json", "x-api-key": self.api_key}
 
         try:
             response = requests.post(
                 f"{self.api_url}/conversations",
                 json=payload,
                 headers=headers,
-                timeout=10
+                timeout=10,
             )
             # Log status code only, not response body (may contain sensitive data)
             if response.status_code >= 400:

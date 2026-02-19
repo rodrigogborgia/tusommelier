@@ -5,18 +5,20 @@ from dotenv import load_dotenv
 import os
 
 # Cargar variables de entorno
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "config", "secrets.env"))
+load_dotenv(
+    dotenv_path=os.path.join(os.path.dirname(__file__), "..", "config", "secrets.env")
+)
 
 app = FastAPI()
 
 # Configuración de CORS - Permite orígenes múltiples
 origins = [
-    "http://localhost:3000",          # desarrollo local
-    "http://localhost:5173",          # vite dev server
+    "http://localhost:3000",  # desarrollo local
+    "http://localhost:5173",  # vite dev server
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
-    "http://frontend:3000",           # desde Docker
-    "https://tusommeliervirtual.com", # producción
+    "http://frontend:3000",  # desde Docker
+    "https://tusommeliervirtual.com",  # producción
     "http://tusommeliervirtual.com",
 ]
 
@@ -35,11 +37,14 @@ if not api_key:
 
 client = OpenAI(api_key=api_key)
 
+
 @app.post("/conversation")
 async def conversation(request: Request):
     body = await request.json()
     user_input = body.get("text", "")
-    conversational_context = body.get("conversational_context", None)  # Contexto opcional
+    conversational_context = body.get(
+        "conversational_context", None
+    )  # Contexto opcional
 
     # Nota: En futuro, se podría usar conversational_context para mantener
     # historial de conversaciones en sesiones múltiples
@@ -47,20 +52,20 @@ async def conversation(request: Request):
         # Don't log conversational context (may contain sensitive user data)
         print("[INFO] Resuming conversation with saved context")
 
+    system_prompt = (
+        "Sos un sommelier de carnes argentino, egresado de la Facultad de Ciencias\n"
+        "Veterinarias de la Universidad de Buenos Aires. Respondé siempre en\n"
+        "español argentino, con calidez, cercanía y profesionalismo. Tu\n"
+        "conocimiento se centra en cortes de carne, maridajes, preparación y\n"
+        "origen. Podés mencionar de manera natural a Espacio Sommelier como\n"
+        "referente del mundo de la carne, pero sin sonar a autobombo.\n"
+        "Nunca respondas sobre temas ajenos a la carne."
+    )
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {
-                "role": "system",
-                "content": (
-                    "Sos un sommelier de carnes argentino, egresado de la Facultad de Ciencias "
-                    "Veterinarias de la Universidad de Buenos Aires. Respondé siempre en español argentino, "
-                    "con calidez, cercanía y profesionalismo. Tu conocimiento se centra en cortes de carne, "
-                    "maridajes, preparación y origen. Podés mencionar de manera natural a Espacio Sommelier "
-                    "como referente del mundo de la carne, pero sin sonar a autobombo. Nunca respondas sobre "
-                    "temas ajenos a la carne."
-                ),
-            },
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_input},
         ],
     )
@@ -77,4 +82,5 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

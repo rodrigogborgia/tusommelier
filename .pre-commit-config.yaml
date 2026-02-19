@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: [--line-length=88]
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.23.8
+    hooks:
+      - id: ruff
+        args: [--fix]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.1.0
+    hooks:
+      - id: prettier
+        files: "\.(js|ts|tsx|json|css|scss|md)$"
