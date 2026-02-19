@@ -1,0 +1,131 @@
+name: Dependabot Auto-Merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: [CI, E2E Tests]
+    types: [completed]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  dependabot-metadata:
+    name: Fetch Dependabot metadata
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    outputs:
+      dependency-type: ${{ steps.metadata.outputs.dependency-type }}
+      update-type: ${{ steps.metadata.outputs.update-type }}
+      package-ecosystem: ${{ steps.metadata.outputs.package-ecosystem }}
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+  check-ci-status:
+    name: Check CI Status
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    outputs:
+      ci-passed: ${{ steps.check.outputs.ci-passed }}
+    steps:
+      - name: Check if CI passed
+        id: check
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          if [ -z "$PR_NUMBER" ]; then
+            # For workflow_run trigger, get PR from commits
+            PR_NUMBER=$(gh pr list -s open -S "head:${{ github.head_ref }}" --json number -q '.[0].number')
+          fi
+          
+          if [ -z "$PR_NUMBER" ]; then
+            echo "ci-passed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check PR checks status
+          CHECKS=$(gh pr checks "$PR_NUMBER" --required)
+          if echo "$CHECKS" | grep -q "fail\|FAILED"; then
+            echo "ci-passed=false" >> $GITHUB_OUTPUT
+          else
+            echo "ci-passed=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  auto-merge:
+    name: Auto-merge Dependabot PR
+    runs-on: ubuntu-latest
+    needs: [dependabot-metadata, check-ci-status]
+    if: |
+      github.actor == 'dependabot[bot]' &&
+      needs.check-ci-status.outputs.ci-passed == 'true'
+    steps:
+      - name: Enable auto-merge for Dependabot PRs
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          
+          # If triggered by workflow_run, find the PR
+          if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER=$(gh pr list -s open -S "head:${{ github.head_ref }}" --json number -q '.[0].number')
+          fi
+          
+          if [ -n "$PR_NUMBER" ]; then
+            # Try to auto-merge with squash strategy
+            gh pr merge --squash --auto "$PR_NUMBER" || \
+            gh pr merge --squash "$PR_NUMBER" || \
+            echo "Could not merge PR $PR_NUMBER"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete branch after merge
+        if: always()
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          
+          if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER=$(gh pr list -s open -S "head:${{ github.head_ref }}" --json number -q '.[0].number' | head -1)
+          fi
+          
+          if [ -n "$PR_NUMBER" ]; then
+            # Get PR details to extract branch name
+            BRANCH=$(gh pr view "$PR_NUMBER" --json headRefName -q '.headRefName' || echo "")
+            
+            if [ -n "$BRANCH" ] && [ "$BRANCH" != "main" ]; then
+              # Only delete if PR is merged/closed
+              STATE=$(gh pr view "$PR_NUMBER" --json state -q '.state')
+              if [ "$STATE" = "MERGED" ] || [ "$STATE" = "CLOSED" ]; then
+                git push origin --delete "$BRANCH" || echo "Could not delete branch $BRANCH"
+              fi
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify-failure:
+    name: Notify when CI fails
+    runs-on: ubuntu-latest
+    if: |
+      github.actor == 'dependabot[bot]' &&
+      needs.check-ci-status.outputs.ci-passed != 'true'
+    needs: check-ci-status
+    steps:
+      - name: Comment on PR about CI failure
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          
+          if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER=$(gh pr list -s open -S "head:${{ github.head_ref }}" --json number -q '.[0].number')
+          fi
+          
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr comment "$PR_NUMBER" -b "⚠️ CI checks did not pass. Please review the workflow runs and fix any failures before merging."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

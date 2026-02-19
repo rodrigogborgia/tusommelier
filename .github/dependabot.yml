@@ -1,14 +1,52 @@
 version: 2
 updates:
+  # Python backend dependencies
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 10
     target-branch: "main"
+    reviewers:
+      - "rodrigogborgia"
+    allow:
+      # Allow security and patch version updates to be auto-merged
+      - dependency-type: "direct"
+        update-types:
+          - "semver-patch"
+          - "semver-minor"
+      - dependency-type: "indirect"
+        update-types:
+          - "semver-patch"
+    # Rebase automatically to avoid merge conflicts
+    rebase-strategy: "auto"
+    # Group minor and patch updates
+    commit-message:
+      prefix: "chore(deps): "
+      include: "scope"
+
+  # Frontend npm dependencies
   - package-ecosystem: "npm"
     directory: "/my-tavus-app"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 10
     target-branch: "main"
+    reviewers:
+      - "rodrigogborgia"
+    allow:
+      # For npm, be more conservative - only auto-merge patches
+      - dependency-type: "direct"
+        update-types:
+          - "semver-patch"
+      - dependency-type: "indirect"
+        update-types:
+          - "semver-patch"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "chore(deps): "
+      include: "scope"
