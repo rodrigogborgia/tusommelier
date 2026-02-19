@@ -5,9 +5,10 @@ from fastapi.testclient import TestClient
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv(
-    dotenv_path=os.path.join(os.path.dirname(__file__), "..", "..", "config", "secrets.env")
+secrets_file = os.path.join(
+    os.path.dirname(__file__), "..", "..", "config", "secrets.env"
 )
+load_dotenv(dotenv_path=secrets_file)
 
 # Ensure repo root is on sys.path so 'backend' package can be imported during tests
 repo_root = Path(__file__).resolve().parents[2]
