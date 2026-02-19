@@ -23,6 +23,8 @@ interface ConversationProps {
   backendReply?: string;
   inactivityLimitSeconds?: number;
   onSaveContext?: (context: string) => void;
+  onNewConversation?: () => void;
+  onResumeConversation?: () => void;
 }
 
 const VideoPreview = React.memo(({ id }: { id: string }) => {
@@ -95,7 +97,7 @@ const MainVideo = React.memo(() => {
   );
 });
 
-export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply, inactivityLimitSeconds, onSaveContext }: ConversationProps) => {
+export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply, inactivityLimitSeconds, onSaveContext, onNewConversation, onResumeConversation }: ConversationProps) => {
   const { joinCall, leaveCall } = useCVICall();
   const meetingState = useMeetingState();
   const { hasMicError } = useDevices();
@@ -264,72 +266,80 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply
 
   return (
     <div className={styles.container}>
-      <div className={styles.videoContainer}>
-        {hasMicError && (
-          <div className={styles.errorContainer}>
-            <p>
-              Camera or microphone access denied. Please check your settings and try again.
-            </p>
+      {/* HEADER CON LOGO */}
+      <div className={styles.header}>
+        <h1 className={styles.headerLogo}>🍷 Espacio Sommelier</h1>
+      </div>
+
+      {/* MAIN CONTENT - AVATAR */}
+      <div className={styles.mainContent}>
+        <div className={styles.videoContainer}>
+          {hasMicError && (
+            <div className={styles.errorContainer}>
+              <p>
+                Camera or microphone access denied. Please check your settings and try again.
+              </p>
+            </div>
+          )}
+
+          <div className={styles.mainVideoContainer}>
+            <MainVideo />
           </div>
-        )}
 
-        <div className={styles.mainVideoContainer}>
-          <MainVideo />
-        </div>
+          <div className={styles.selfViewContainer}>
+            <PreviewVideos />
+          </div>
 
-        <div className={styles.selfViewContainer}>
-          <PreviewVideos />
+          {/* Status Bar dentro del video container */}
+          <div className={styles.statusBar}>
+            {meetingState === "joining-meeting" && (
+              <div className={styles.statusBanner}>
+                <p>Conectando...</p>
+              </div>
+            )}
+
+            {meetingState === "joined-meeting" && (
+              <div className={styles.statusBannerConnected}>
+                <p>Conectado ✓</p>
+              </div>
+            )}
+
+            {meetingState === "error" && (
+              <div className={styles.errorBanner}>
+                <p>
+                  Error de conexión
+                  <button
+                    type="button"
+                    className={styles.retryButton}
+                    onClick={handleRetry}
+                    disabled={isRetrying}
+                  >
+                    {isRetrying ? "Intentando..." : "Reintentar"}
+                  </button>
+                </p>
+              </div>
+            )}
+
+            {isClosedDueToInactivity && (
+              <div className={styles.errorBanner}>
+                <p>
+                  La conversación ha finalizado por inactividad.
+                  <button
+                    type="button"
+                    onClick={handleLeave}
+                    className={styles.retryButton}
+                    style={{ marginLeft: 12 }}
+                  >
+                    Cerrar sesión
+                  </button>
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className={styles.statusBar}>
-        {meetingState === "joining-meeting" && (
-          <div className={styles.statusBanner}>
-            <p>Conectando...</p>
-          </div>
-        )}
-
-        {meetingState === "joined-meeting" && (
-          <div className={styles.statusBannerConnected}>
-            <p>Conectado ✓</p>
-          </div>
-        )}
-
-        {meetingState === "error" && (
-          <div className={styles.errorBanner}>
-            <p>
-              Error de conexión
-              <button
-                type="button"
-                className={styles.retryButton}
-                onClick={handleRetry}
-                disabled={isRetrying}
-              >
-                {isRetrying ? "Intentando..." : "Reintentar"}
-              </button>
-            </p>
-          </div>
-        )}
-      </div>
-
-      {isClosedDueToInactivity && (
-        <div className={styles.statusBar}>
-          <div className={styles.errorBanner}>
-            <p>
-              La conversación ha finalizado por inactividad.
-              <button
-                type="button"
-                onClick={handleLeave}
-                className={styles.retryButton}
-                style={{ marginLeft: 12 }}
-              >
-                Cerrar sesión
-              </button>
-            </p>
-          </div>
-        </div>
-      )}
-
+      {/* FOOTER CON CONTROLES */}
       <div className={styles.footer}>
         <div className={styles.footerControls}>
           <MicSelectBtn />
@@ -357,6 +367,30 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply
             </span>
           </button>
         </div>
+
+        {/* Botones Nueva/Retomar (opcionales) */}
+        {(onNewConversation || onResumeConversation) && (
+          <div className={styles.footerButtonsContainer}>
+            {onNewConversation && (
+              <button
+                type="button"
+                className={styles.footerButton}
+                onClick={onNewConversation}
+              >
+                Nueva conversación
+              </button>
+            )}
+            {onResumeConversation && (
+              <button
+                type="button"
+                className={styles.footerButton}
+                onClick={onResumeConversation}
+              >
+                Retomar conversación
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
