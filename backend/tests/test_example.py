@@ -1,4 +1,3 @@
-import pytest
 from types import SimpleNamespace
 
 
@@ -14,7 +13,10 @@ def test_simple_sum():
 def test_client_initialization():
     """Test 2: simulate initializing a client and assert expected attributes."""
 
-    def create_client(api_key: str, url: str = "https://api.example") -> SimpleNamespace:
+    def create_client(
+        api_key: str,
+        url: str = "https://api.example",
+    ) -> SimpleNamespace:
         # This simulates a factory that real code would provide (e.g. TavusClient)
         return SimpleNamespace(api_key=api_key, api_url=url, timeout=10)
 

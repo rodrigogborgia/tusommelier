@@ -1,7 +1,3 @@
-import os
-import socket
-from types import SimpleNamespace
-
 import pytest
 
 
@@ -63,7 +59,7 @@ def test_livekit_client_socket(monkeypatch):
         return FakeSocket()
 
     monkeypatch.setattr("socket.create_connection", fake_create_connection)
-    monkeypatch.setenv("LIVEKIT_API_KEY", "k" )
+    monkeypatch.setenv("LIVEKIT_API_KEY", "k")
     monkeypatch.setenv("LIVEKIT_API_SECRET", "s")
 
     from src.livekit_client import LiveKitClient

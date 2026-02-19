@@ -1,13 +1,13 @@
+import sys  # noqa: F401
+from pathlib import Path
 from fastapi.testclient import TestClient
 from types import SimpleNamespace
-import sys
-from pathlib import Path
 
 # Ensure repo root is on sys.path so 'backend' package can be imported during tests
 repo_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(repo_root))
 
-from backend import main as backend_main
+from backend import main as backend_main  # noqa: E402
 
 
 client = TestClient(backend_main.app)
