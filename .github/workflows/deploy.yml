@@ -26,6 +26,8 @@ jobs:
     name: Test (pytest)
     runs-on: ubuntu-latest
     needs: lint
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -81,7 +83,7 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: docker
+    needs: [lint, test, docker]
     if: success()
     environment:
       name: production
