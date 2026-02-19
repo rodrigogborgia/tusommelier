@@ -13,6 +13,20 @@ const App: React.FC = () => {
   const [backendReply, setBackendReply] = useState<string>("");
   const [conversationalContext, setConversationalContext] = useState<string | null>(null);
   const [hasContextAvailable, setHasContextAvailable] = useState(false);
+  const [shouldStartCall, setShouldStartCall] = useState(true);
+  const [isSafariIOS, setIsSafariIOS] = useState(false);
+
+  // Detectar Safari en iOS
+  useEffect(() => {
+    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (isSafari && isIOS) {
+      setIsSafariIOS(true);
+      // En Safari iOS, no iniciar autoplay hasta confirmación del usuario
+      setShouldStartCall(false);
+    }
+  }, []);
 
   // Determinar URL del backend basado en el entorno
   const getBackendUrl = () => {
@@ -77,6 +91,11 @@ const App: React.FC = () => {
         setConversationalContext(null);
         setHasContextAvailable(false);
       }
+      
+      // En Safari iOS, habilitar autoplay después de crear la conversación
+      if (isSafariIOS) {
+        setShouldStartCall(true);
+      }
     } catch (err) {
       console.error("Error en startConversation:", err);
       alert(`Error: ${err instanceof Error ? err.message : "No se pudo conectar al backend"}`);
@@ -91,6 +110,10 @@ const App: React.FC = () => {
       setHasContextAvailable(true);
     }
     setConversationUrl(null);
+    // Resetear autoplay para Safari
+    if (isSafariIOS) {
+      setShouldStartCall(false);
+    }
   };
 
   return (
@@ -150,6 +173,7 @@ const App: React.FC = () => {
               onLeave={(context?: string) => handleConversationEnd(context)}
               backendReply={backendReply}
               onSaveContext={saveConversationalContext}
+              shouldStartCall={shouldStartCall}
             />
             <p style={{ marginTop: "1rem", fontStyle: "italic", maxWidth: "600px" }}>
               Respuesta del avatar: {backendReply}

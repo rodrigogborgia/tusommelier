@@ -25,6 +25,7 @@ interface ConversationProps {
   onSaveContext?: (context: string) => void;
   onNewConversation?: () => void;
   onResumeConversation?: () => void;
+  shouldStartCall?: boolean; // Safari: esperar confirmación antes de iniciar
 }
 
 const VideoPreview = React.memo(({ id }: { id: string }) => {
@@ -97,7 +98,7 @@ const MainVideo = React.memo(() => {
   );
 });
 
-export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply, inactivityLimitSeconds, onSaveContext, onNewConversation, onResumeConversation }: ConversationProps) => {
+export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply, inactivityLimitSeconds, onSaveContext, onNewConversation, onResumeConversation, shouldStartCall = true }: ConversationProps) => {
   const { joinCall, leaveCall } = useCVICall();
   const meetingState = useMeetingState();
   const { hasMicError } = useDevices();
@@ -118,8 +119,10 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply
   }, [meetingState, onLeave]);
 
   useEffect(() => {
-    joinCall({ url: conversationUrl });
-  }, [conversationUrl, joinCall]);
+    if (shouldStartCall) {
+      joinCall({ url: conversationUrl });
+    }
+  }, [conversationUrl, joinCall, shouldStartCall]);
 
   // Test helper: allow tests to force-close the conversation by dispatching
   // `tavus-test-force-inactivity` on window. This listener is inert in normal
