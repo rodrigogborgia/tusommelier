@@ -2,7 +2,7 @@ name: 3 - Deploy Production
 
 on:
   workflow_run:
-    workflows: [Deploy Staging]
+    workflows: ["2 - Deploy Staging"]
     branches: [main]
     types: [completed]
 
