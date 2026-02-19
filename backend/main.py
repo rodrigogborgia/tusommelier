@@ -30,7 +30,8 @@ app.add_middleware(
 
 # Inicializar cliente de OpenAI
 api_key = os.getenv("OPENAI_API_KEY")
-print("API KEY:", api_key)
+if not api_key:
+    raise ValueError("OPENAI_API_KEY not found in environment variables")
 
 client = OpenAI(api_key=api_key)
 
@@ -43,7 +44,8 @@ async def conversation(request: Request):
     # Nota: En futuro, se podría usar conversational_context para mantener
     # historial de conversaciones en sesiones múltiples
     if conversational_context:
-        print(f"Reanudando conversación con contexto: {conversational_context[:100]}...")
+        # Don't log conversational context (may contain sensitive user data)
+        print("[INFO] Resuming conversation with saved context")
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",

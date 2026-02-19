@@ -9,7 +9,9 @@ class TavusClient:
         load_dotenv(dotenv_path=os.path.join("config", "secrets.env"))
         self.api_url = os.getenv("TAVUS_API_URL", "https://api.tavus.io/v2")
         self.api_key = os.getenv("TAVUS_API_KEY", "")
-        print(f"[DEBUG] Tavus API Key: {self.api_key}")
+        # Verify that API key is loaded (don't log the actual key)
+        if not self.api_key:
+            raise ValueError("TAVUS_API_KEY not found in environment variables")
 
     def test_connection(self) -> bool:
         try:
@@ -22,8 +24,9 @@ class TavusClient:
                 headers=headers,
                 timeout=10
             )
-            print(f"[DEBUG] Tavus status: {response.status_code}")
-            print(f"[DEBUG] Tavus body: {response.text}")
+            # Log status code only, not response body (may contain sensitive data)
+            if response.status_code != 200:
+                print(f"[WARNING] Tavus connection failed with status: {response.status_code}")
             return response.status_code == 200
         except Exception as e:
             print(f"Error en Tavus: {e}")
@@ -51,8 +54,9 @@ class TavusClient:
                 headers=headers,
                 timeout=10
             )
-            print(f"[DEBUG] Create conversation status: {response.status_code}")
-            print(f"[DEBUG] Response body: {response.text}")
+            # Log status code only, not response body (may contain sensitive data)
+            if response.status_code >= 400:
+                print(f"[ERROR] Failed to create conversation: {response.status_code}")
             response.raise_for_status()
             return response.json()
         except Exception as e:

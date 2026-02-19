@@ -8,8 +8,9 @@ class LiveKitClient:
         self.api_url = os.getenv("LIVEKIT_API_URL", "http://localhost:7880")
         self.api_key = os.getenv("LIVEKIT_API_KEY", "")
         self.api_secret = os.getenv("LIVEKIT_API_SECRET", "")
-        print(f"[DEBUG] LiveKit API Key: {self.api_key}")
-        print(f"[DEBUG] LiveKit API Secret: {self.api_secret}")
+        # Verify credentials are loaded (don't log the actual keys)
+        if not self.api_key or not self.api_secret:
+            raise ValueError("LiveKit credentials not found in environment variables")
 
     def test_connection(self):
         try:
