@@ -71,7 +71,7 @@ async def conversation(request: Request):
     )
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5.2-codex",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_input},
