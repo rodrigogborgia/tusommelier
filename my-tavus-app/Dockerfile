@@ -12,6 +12,9 @@ RUN npm install --legacy-peer-deps
 # Copiamos el resto del código
 COPY . .
 
+# Establecer variables de entorno para el build de producción
+ENV VITE_BACKEND_URL=/api
+
 # Generamos el build optimizado
 RUN npm run build
 

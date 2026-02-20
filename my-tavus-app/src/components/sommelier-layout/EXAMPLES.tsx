@@ -184,10 +184,6 @@ export const AdvancedAvatarInterface: React.FC<{
             icon="📞"
             onClick={onEndCall}
             title="Terminar llamada"
-            style={{
-              backgroundColor: "#c55957",
-              borderColor: "#6B0F1A",
-            } as any}
           />
         </div>
       }
@@ -262,17 +258,6 @@ export const ConnectedAvatarInterface: React.FC<{
   connectionStatus: ConnectionStatus;
   onEndCall: () => void;
 }> = ({ videoNode, connectionStatus, onEndCall }) => {
-  const getStatusColor = () => {
-    switch (connectionStatus.status) {
-      case "connected":
-        return "#4CAF50";
-      case "connecting":
-        return "#FF9800";
-      case "disconnected":
-        return "#F44336";
-    }
-  };
-
   const getStatusIcon = () => {
     switch (connectionStatus.status) {
       case "connected":
