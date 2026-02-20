@@ -18,9 +18,10 @@ services:
     container_name: tusommelier-frontend
     restart: always
     expose:
-      - "3000"
+      - "80"
     environment:
       - VIRTUAL_HOST=tusommeliervirtual.com
+      - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=tusommeliervirtual.com
       - LETSENCRYPT_EMAIL=rodrigo@gamificagroup.com
 
