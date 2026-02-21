@@ -14,12 +14,12 @@ Solución esperada:
 
 ## Verificaciones rápidas
 
-### 1) Backend y frontend desplegados con últimas imágenes
+### 1) Backend y frontend desplegados en host
 
 ```bash
-docker compose pull
-docker compose up -d
-docker compose ps
+systemctl status tusommelier-backend
+nginx -t
+systemctl status nginx
 ```
 
 ### 2) API externa por HTTPS
@@ -61,7 +61,7 @@ En local se usa `http://localhost:8000`.
 ## Logs útiles
 
 ```bash
-docker compose logs -f frontend
-docker compose logs -f backend
-docker compose logs -f nginx-proxy
+journalctl -u tusommelier-backend -f
+tail -f /var/log/nginx/tusommelier_access.log
+tail -f /var/log/nginx/tusommelier_error.log
 ```

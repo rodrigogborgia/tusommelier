@@ -1,0 +1,17 @@
+[Unit]
+Description=TuSommelier FastAPI Backend
+After=network.target
+
+[Service]
+Type=simple
+User=__SERVER_USER__
+Group=__SERVER_USER__
+WorkingDirectory=/home/__SERVER_USER__/tusommelier/backend
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/home/__SERVER_USER__/tusommelier/config/secrets.env
+ExecStart=/home/__SERVER_USER__/tusommelier/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

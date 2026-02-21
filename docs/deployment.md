@@ -1,23 +1,33 @@
-# Deployment (Staging)
+# Deployment (Sin Docker)
 
-This repository supports building and pushing a Docker image to GitHub Container Registry (GHCR) via the `Deploy Staging` workflow.
+Este proyecto despliega en servidor por SSH con `systemd` + `nginx`, sin contenedores.
 
-Secrets to set in GitHub:
-- `GITHUB_TOKEN` (provided automatically in Actions)
-- `SENTRY_DSN` (optional)
+## Workflows
 
-How it works:
+- `1- CI`: lint/tests/security
+- `2 - Deploy Staging`: valida instalación de backend y build de frontend
+- `3 - Deploy Production`: despliega en servidor
 
-- On push to `main`, `.github/workflows/deploy-staging.yml` builds the repository Docker image and pushes it to `ghcr.io/<org>/tusommelier:staging-<sha>`.
-- You can deploy that image to your cloud provider (Kubernetes, Render, Fly, etc.).
+## Secrets requeridos en GitHub
 
-Local testing:
+- `SERVER_HOST`
+- `SERVER_USER`
+- `DEPLOY_KEY`
+
+## Qué hace el deploy de producción
+
+1. `git reset --hard origin/main`
+2. Crea/actualiza `.venv` e instala `backend/requirements.txt`
+3. Ejecuta `npm ci` y `npm run build` en `my-tavus-app`
+4. Copia `my-tavus-app/dist` a `/var/www/frontend`
+5. Instala/actualiza unidad `systemd` `tusommelier-backend`
+6. Valida y recarga `nginx`
+7. Reinicia `tusommelier-backend`
+
+## Verificación post-deploy
 
 ```bash
-# build locally
-docker build -t tusommelier:local .
-# run backend
-docker run -p 8000:8000 tusommelier:local
+curl -i https://tusommeliervirtual.com
+curl -i https://tusommeliervirtual.com/api/health
+systemctl status tusommelier-backend
 ```
-
-If you prefer automatic deploys to a provider (Vercel/Render/Heroku), I can add provider-specific workflows next.
