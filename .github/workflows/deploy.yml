@@ -57,9 +57,10 @@ jobs:
             sed "s/__SERVER_USER__/${{ secrets.SERVER_USER }}/g" deploy/systemd/tusommelier-backend.service > /tmp/tusommelier-backend.service
             sudo mv /tmp/tusommelier-backend.service /etc/systemd/system/tusommelier-backend.service
 
-            if [ ! -f /etc/letsencrypt/live/tusommeliervirtual.com/fullchain.pem ] || [ ! -f /etc/letsencrypt/live/tusommeliervirtual.com/privkey.pem ]; then
-              echo "SSL certificate files not found in /etc/letsencrypt/live/tusommeliervirtual.com"
-              echo "Run certbot once before enabling nginx config."
+            SSL_CERT_DIR="/etc/nginx/certs/tusommeliervirtual.com"
+            if [ ! -f "${SSL_CERT_DIR}/fullchain.pem" ] || [ ! -f "${SSL_CERT_DIR}/key.pem" ]; then
+              echo "SSL certificate files not found in ${SSL_CERT_DIR}"
+              echo "Expected files: fullchain.pem and key.pem"
               exit 1
             fi
 

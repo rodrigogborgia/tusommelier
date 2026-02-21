@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { CVIProvider } from "./components/cvi/components/cvi-provider";
 import { Conversation } from "./components/cvi/components/conversation";
+import { AvatarLayout, ControlButton } from "./components/sommelier-layout";
 import { 
   createConversation, 
   getConversationalContext,
@@ -9,6 +10,9 @@ import {
 } from "./components/cvi/api";
 
 const App: React.FC = () => {
+  const showLayoutVerification =
+    import.meta.env.VITE_SHOW_LAYOUT_VERIFICATION !== "false";
+
   const [conversationUrl, setConversationUrl] = useState<string | null>(null);
   const [backendReply, setBackendReply] = useState<string>("");
   const [conversationalContext, setConversationalContext] = useState<string | null>(null);
@@ -132,42 +136,94 @@ const App: React.FC = () => {
 
   return (
     <CVIProvider>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-          backgroundColor: "#1e1e1e",
-          color: "#fff",
-        }}
-      >
-        <h1>Tavus CVI - Sommelier de Carnes</h1>
-        {!conversationUrl ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center" }}>
-            <button
-              onClick={() => startConversation(false)}
-              style={{
-                padding: "0.75rem 1.5rem",
-                background: "#6a0dad",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontSize: "1rem",
-                fontWeight: "bold",
-              }}
-            >
-              Iniciar Conversación Nueva
-            </button>
-
-            {hasContextAvailable && (
+      {showLayoutVerification ? (
+        <AvatarLayout
+          headerContent={
+            <h1 style={{ margin: 0, color: "#6B0F1A", letterSpacing: "1px" }}>
+              ✨ Sommelier Digital
+            </h1>
+          }
+          avatarContent={
+            conversationUrl ? (
+              <Conversation
+                conversationUrl={conversationUrl}
+                onLeave={(context?: string) => handleConversationEnd(context)}
+                backendReply={backendReply}
+                onSaveContext={saveConversationalContext}
+                shouldStartCall={shouldStartCall}
+              />
+            ) : (
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "#FFFFFF",
+                  color: "#3D2817",
+                  fontSize: "1.1rem",
+                  textAlign: "center",
+                  padding: "1rem",
+                }}
+              >
+                📹 Video del Avatar
+              </div>
+            )
+          }
+          controls={
+            <>
+              <ControlButton
+                icon="🎤"
+                label="Micrófono"
+                onClick={() => {}}
+                isActive
+              />
+              <ControlButton
+                icon="📹"
+                label="Cámara"
+                onClick={() => {}}
+                isActive
+              />
+              {!conversationUrl ? (
+                <ControlButton
+                  icon="📞"
+                  label="Iniciar"
+                  onClick={() => startConversation(false)}
+                />
+              ) : (
+                <ControlButton icon="📞" label="En llamada" onClick={() => {}} />
+              )}
+              {!conversationUrl && hasContextAvailable && (
+                <ControlButton
+                  icon="♻️"
+                  label="Retomar"
+                  onClick={() => startConversation(true)}
+                />
+              )}
+            </>
+          }
+        />
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+            backgroundColor: "#1e1e1e",
+            color: "#fff",
+          }}
+        >
+          <h1>Tavus CVI - Sommelier de Carnes</h1>
+          {!conversationUrl ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center" }}>
               <button
-                onClick={() => startConversation(true)}
+                onClick={() => startConversation(false)}
                 style={{
                   padding: "0.75rem 1.5rem",
-                  background: "#0dad6a",
+                  background: "#6a0dad",
                   color: "#fff",
                   border: "none",
                   borderRadius: "6px",
@@ -176,25 +232,43 @@ const App: React.FC = () => {
                   fontWeight: "bold",
                 }}
               >
-                Retomar Conversación Anterior
+                Iniciar Conversación Nueva
               </button>
-            )}
-          </div>
-        ) : (
-          <>
-            <Conversation
-              conversationUrl={conversationUrl}
-              onLeave={(context?: string) => handleConversationEnd(context)}
-              backendReply={backendReply}
-              onSaveContext={saveConversationalContext}
-              shouldStartCall={shouldStartCall}
-            />
-            <p style={{ marginTop: "1rem", fontStyle: "italic", maxWidth: "600px" }}>
-              Respuesta del avatar: {backendReply}
-            </p>
-          </>
-        )}
-      </div>
+
+              {hasContextAvailable && (
+                <button
+                  onClick={() => startConversation(true)}
+                  style={{
+                    padding: "0.75rem 1.5rem",
+                    background: "#0dad6a",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Retomar Conversación Anterior
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <Conversation
+                conversationUrl={conversationUrl}
+                onLeave={(context?: string) => handleConversationEnd(context)}
+                backendReply={backendReply}
+                onSaveContext={saveConversationalContext}
+                shouldStartCall={shouldStartCall}
+              />
+              <p style={{ marginTop: "1rem", fontStyle: "italic", maxWidth: "600px" }}>
+                Respuesta del avatar: {backendReply}
+              </p>
+            </>
+          )}
+        </div>
+      )}
     </CVIProvider>
   );
 };
