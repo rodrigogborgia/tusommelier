@@ -9,6 +9,12 @@ on:
 permissions:
   contents: read
 
+env:
+  DEPLOY_HOST: ${{ secrets.SERVER_HOST || secrets.HOST }}
+  DEPLOY_USER: ${{ secrets.SERVER_USER || secrets.USERNAME }}
+  DEPLOY_KEY: ${{ secrets.DEPLOY_KEY || secrets.KEY }}
+  DEPLOY_PORT: ${{ secrets.SERVER_PORT || '22' }}
+
 jobs:
   deploy:
     name: Deploy to Production
@@ -21,14 +27,52 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
 
+      - name: Validate SSH secrets and connectivity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${DEPLOY_HOST}" ]; then
+            echo "Missing SSH host secret. Configure SERVER_HOST or HOST."
+            exit 1
+          fi
+
+          if [ -z "${DEPLOY_USER}" ]; then
+            echo "Missing SSH user secret. Configure SERVER_USER or USERNAME."
+            exit 1
+          fi
+
+          if [ -z "${DEPLOY_KEY}" ]; then
+            echo "Missing SSH private key secret. Configure DEPLOY_KEY or KEY."
+            exit 1
+          fi
+
+          python - <<'PY'
+          import os
+          import socket
+
+          host = os.environ["DEPLOY_HOST"]
+          port = int(os.environ.get("DEPLOY_PORT", "22"))
+
+          try:
+              with socket.create_connection((host, port), timeout=8):
+                  print(f"SSH TCP connectivity OK: {host}:{port}")
+          except Exception as exc:
+              raise SystemExit(f"Cannot reach SSH endpoint {host}:{port} from GitHub runner: {exc}")
+          PY
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
+          host: ${{ env.DEPLOY_HOST }}
+          username: ${{ env.DEPLOY_USER }}
+          key: ${{ env.DEPLOY_KEY }}
+          port: ${{ env.DEPLOY_PORT }}
+          timeout: 60s
+          command_timeout: 45m
+          script_stop: true
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/tusommelier
+            cd /home/${{ env.DEPLOY_USER }}/tusommelier
 
             sudo apt-get update
             sudo apt-get install -y nginx python3 python3-venv python3-pip curl ca-certificates gnupg
@@ -54,7 +98,7 @@ jobs:
             sudo find /var/www/frontend -mindepth 1 -maxdepth 1 -exec rm -rf {} +
             sudo cp -r my-tavus-app/dist/. /var/www/frontend/
 
-            sed "s/__SERVER_USER__/${{ secrets.SERVER_USER }}/g" deploy/systemd/tusommelier-backend.service > /tmp/tusommelier-backend.service
+            sed "s/__SERVER_USER__/${{ env.DEPLOY_USER }}/g" deploy/systemd/tusommelier-backend.service > /tmp/tusommelier-backend.service
             sudo mv /tmp/tusommelier-backend.service /etc/systemd/system/tusommelier-backend.service
 
             SSL_CERT_DIR="/etc/nginx/certs/tusommeliervirtual.com"
