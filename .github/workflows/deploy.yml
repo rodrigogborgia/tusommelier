@@ -134,3 +134,17 @@ jobs:
             sudo systemctl enable tusommelier-backend
             sudo systemctl restart tusommelier-backend
             sudo systemctl --no-pager --full status tusommelier-backend | head -n 20
+
+            if ! curl -fsS http://127.0.0.1:8000/health >/dev/null; then
+              echo "Backend health check failed on 127.0.0.1:8000"
+              sudo journalctl -u tusommelier-backend -n 120 --no-pager
+              exit 1
+            fi
+
+            API_STATUS=$(curl -sS -o /tmp/tusommelier_api_health.txt -w "%{http_code}" -H "Host: tusommeliervirtual.com" http://127.0.0.1/api/health)
+            if [ "${API_STATUS}" != "200" ]; then
+              echo "Nginx /api health check failed with status ${API_STATUS}"
+              cat /tmp/tusommelier_api_health.txt || true
+              sudo tail -n 100 /var/log/nginx/tusommelier_error.log || true
+              exit 1
+            fi
