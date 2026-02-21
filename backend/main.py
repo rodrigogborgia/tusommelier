@@ -91,14 +91,20 @@ async def conversation(request: Request):
             reply = response.choices[0].message.content
 
         if not reply:
-            raise HTTPException(status_code=502, detail="OpenAI returned an empty response")
+            raise HTTPException(
+                status_code=502,
+                detail="OpenAI returned an empty response",
+            )
 
         return {"reply": reply}
     except HTTPException:
         raise
     except Exception as exc:
         logger.exception("OpenAI request failed")
-        raise HTTPException(status_code=502, detail=f"OpenAI request failed: {exc}")
+        raise HTTPException(
+            status_code=502,
+            detail=f"OpenAI request failed: {exc}",
+        )
 
 
 @app.get("/health")
