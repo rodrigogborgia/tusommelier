@@ -25,16 +25,12 @@ def test_health_endpoint():
 def test_conversation_endpoint_monkeypatch(monkeypatch):
     """Test conversation endpoint using a fake OpenAI client."""
 
-    fake_choice = SimpleNamespace(message=SimpleNamespace(content="hola prueba"))
-
-    class FakeChat:
-        def __init__(self):
-            self.completions = self
+    class FakeResponses:
 
         def create(self, **kwargs):
-            return SimpleNamespace(choices=[fake_choice])
+            return SimpleNamespace(output_text="hola prueba")
 
-    fake_client = SimpleNamespace(chat=FakeChat())
+    fake_client = SimpleNamespace(responses=FakeResponses())
 
     # Patch the client used by the backend to avoid network calls
     monkeypatch.setattr(backend_main, "client", fake_client)

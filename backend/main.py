@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import logging
 import sentry_sdk
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from fastapi.responses import Response
@@ -13,6 +14,7 @@ load_dotenv(
 )
 
 app = FastAPI()
+logger = logging.getLogger(__name__)
 
 # Configuración de CORS - Permite orígenes múltiples
 origins = [
@@ -38,6 +40,7 @@ if not api_key:
     raise ValueError("OPENAI_API_KEY not found in environment variables")
 
 client = OpenAI(api_key=api_key)
+OPENAI_CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
 
 # Initialize Sentry if DSN is provided
 SENTRY_DSN = os.getenv("SENTRY_DSN")
@@ -69,16 +72,33 @@ async def conversation(request: Request):
         "Nunca respondas sobre temas ajenos a la carne."
     )
 
-    response = client.chat.completions.create(
-        model="gpt-5.2-codex",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_input},
-        ],
-    )
+    try:
+        if hasattr(client, "responses"):
+            response = client.responses.create(
+                model=OPENAI_CHAT_MODEL,
+                instructions=system_prompt,
+                input=user_input,
+            )
+            reply = getattr(response, "output_text", None)
+        else:
+            response = client.chat.completions.create(
+                model=OPENAI_CHAT_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_input},
+                ],
+            )
+            reply = response.choices[0].message.content
 
-    reply = response.choices[0].message.content
-    return {"reply": reply}
+        if not reply:
+            raise HTTPException(status_code=502, detail="OpenAI returned an empty response")
+
+        return {"reply": reply}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("OpenAI request failed")
+        raise HTTPException(status_code=502, detail=f"OpenAI request failed: {exc}")
 
 
 @app.get("/health")
