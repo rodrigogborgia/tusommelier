@@ -29,6 +29,15 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             cd /home/${{ secrets.SERVER_USER }}/tusommelier
+
+            sudo apt-get update
+            sudo apt-get install -y nginx python3 python3-venv python3-pip curl ca-certificates gnupg
+
+            if ! command -v node >/dev/null 2>&1; then
+              curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+
             git fetch origin main
             git reset --hard origin/main
 
@@ -48,9 +57,16 @@ jobs:
             sed "s/__SERVER_USER__/${{ secrets.SERVER_USER }}/g" deploy/systemd/tusommelier-backend.service > /tmp/tusommelier-backend.service
             sudo mv /tmp/tusommelier-backend.service /etc/systemd/system/tusommelier-backend.service
 
+            if [ ! -f /etc/letsencrypt/live/tusommeliervirtual.com/fullchain.pem ] || [ ! -f /etc/letsencrypt/live/tusommeliervirtual.com/privkey.pem ]; then
+              echo "SSL certificate files not found in /etc/letsencrypt/live/tusommeliervirtual.com"
+              echo "Run certbot once before enabling nginx config."
+              exit 1
+            fi
+
             sudo cp nginx.conf /etc/nginx/sites-available/tusommelier
             sudo ln -sfn /etc/nginx/sites-available/tusommelier /etc/nginx/sites-enabled/tusommelier
             sudo nginx -t
+            sudo systemctl enable nginx
             sudo systemctl reload nginx
 
             sudo systemctl daemon-reload
