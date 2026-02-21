@@ -72,7 +72,10 @@ jobs:
           command_timeout: 45m
           script_stop: true
           script: |
-            cd /home/${{ env.DEPLOY_USER }}/tusommelier
+            APP_DIR="/home/${{ env.DEPLOY_USER }}/tusommelier"
+            VENV_DIR="${APP_DIR}/.venv"
+
+            cd "${APP_DIR}"
 
             sudo apt-get update
             sudo apt-get install -y nginx python3 python3-venv python3-pip curl ca-certificates gnupg
@@ -85,9 +88,9 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            python3 -m venv .venv
-            ./.venv/bin/pip install --upgrade pip
-            ./.venv/bin/pip install -r backend/requirements.txt
+            python3 -m venv "${VENV_DIR}"
+            "${VENV_DIR}/bin/python3" -m pip install --upgrade pip
+            "${VENV_DIR}/bin/pip" install -r "${APP_DIR}/backend/requirements.txt"
 
             cd my-tavus-app
             npm ci --legacy-peer-deps
