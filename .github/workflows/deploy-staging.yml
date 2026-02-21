@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   deploy-staging:
-    name: Build & Push to GHCR
+    name: Build & Push service images to GHCR
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
@@ -33,14 +33,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push to GHCR
+      - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./backend
+          file: ./backend/dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ github.repository_owner }}/tusommelier:staging-latest
-            ghcr.io/${{ github.repository_owner }}/tusommelier:staging-${{ github.event.workflow_run.head_commit }}
+            ghcr.io/${{ github.repository_owner }}/tusommelier-backend:latest
+            ghcr.io/${{ github.repository_owner }}/tusommelier-backend:${{ github.event.workflow_run.head_commit }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./my-tavus-app
+          file: ./my-tavus-app/Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/tusommelier-frontend:latest
+            ghcr.io/${{ github.repository_owner }}/tusommelier-frontend:${{ github.event.workflow_run.head_commit }}
 

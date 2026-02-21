@@ -33,7 +33,19 @@ const App: React.FC = () => {
   // En desarrollo local: `http://localhost:8000`
   const getBackendUrl = () => {
     const backendEnv = import.meta.env.VITE_BACKEND_URL;
-    if (backendEnv) return backendEnv;
+    if (backendEnv) {
+      const isHttpsPage = window.location.protocol === "https:";
+      const isInsecureBackend = backendEnv.startsWith("http://");
+
+      if (isHttpsPage && isInsecureBackend) {
+        console.warn(
+          "VITE_BACKEND_URL insegura detectada en HTTPS. Se usará /api para evitar mixed content.",
+        );
+        return "/api";
+      }
+
+      return backendEnv;
+    }
     
     // En producción (Nginx + tusommeliervirtual.com): usar `/api/` en el mismo dominio
     if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {

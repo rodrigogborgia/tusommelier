@@ -1,6 +1,6 @@
 services:
   backend:
-    image: human2coach/tusommelier-backend:latest
+    image: ghcr.io/rodrigoborgia/tusommelier-backend:latest
     container_name: tusommelier-backend
     restart: always
     env_file:
@@ -14,7 +14,7 @@ services:
       - LETSENCRYPT_EMAIL=rodrigo@gamificagroup.com
 
   frontend:
-    image: human2coach/tusommelier-frontend:latest
+    image: ghcr.io/rodrigoborgia/tusommelier-frontend:latest
     container_name: tusommelier-frontend
     restart: always
     expose:
