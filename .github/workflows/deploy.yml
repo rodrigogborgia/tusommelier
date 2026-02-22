@@ -103,13 +103,30 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
+            echo "[deploy] Verificando runtime Python"
+            if ! command -v python3 >/dev/null 2>&1; then
+              echo "python3 no está disponible en el servidor"
+              exit 1
+            fi
+
             if [ ! -x "${VENV_PY}" ] || [ ! -x "${VENV_PIP}" ]; then
+              echo "[deploy] Reparando/creando virtualenv en ${VENV_DIR}"
               if [ ! -d "${VENV_DIR}" ]; then
-                python3 -m venv --copies "${VENV_DIR}"
+                python3 -m venv --copies "${VENV_DIR}" || {
+                  echo "[deploy] venv falló; intentando instalar python3-venv/python3-pip"
+                  sudo apt-get update -y
+                  sudo apt-get install -y python3-venv python3-pip
+                  python3 -m venv --copies "${VENV_DIR}"
+                }
               else
                 python3 -m venv --upgrade "${VENV_DIR}" || {
                   rm -rf "${VENV_DIR}"
-                  python3 -m venv --copies "${VENV_DIR}"
+                  python3 -m venv --copies "${VENV_DIR}" || {
+                    echo "[deploy] recreación de venv falló; instalando python3-venv/python3-pip y reintentando"
+                    sudo apt-get update -y
+                    sudo apt-get install -y python3-venv python3-pip
+                    python3 -m venv --copies "${VENV_DIR}"
+                  }
                 }
               fi
             fi
