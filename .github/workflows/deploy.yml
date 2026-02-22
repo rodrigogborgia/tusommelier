@@ -104,11 +104,30 @@ jobs:
             git reset --hard origin/main
 
             if [ ! -x "${VENV_PY}" ] || [ ! -x "${VENV_PIP}" ]; then
-              python3 -m venv --copies "${VENV_DIR}"
+              if [ ! -d "${VENV_DIR}" ]; then
+                python3 -m venv --copies "${VENV_DIR}"
+              else
+                python3 -m venv --upgrade "${VENV_DIR}" || {
+                  rm -rf "${VENV_DIR}"
+                  python3 -m venv --copies "${VENV_DIR}"
+                }
+              fi
             fi
 
             if [ ! -x "${VENV_PY}" ] && [ -x "${VENV_DIR}/bin/python" ]; then
-              ln -s "${VENV_DIR}/bin/python" "${VENV_PY}"
+              ln -sf "${VENV_DIR}/bin/python" "${VENV_PY}"
+            fi
+
+            if [ ! -x "${VENV_PIP}" ] && [ -x "${VENV_DIR}/bin/pip3" ]; then
+              ln -sf "${VENV_DIR}/bin/pip3" "${VENV_PIP}"
+            fi
+
+            if [ ! -x "${VENV_PIP}" ] && [ -x "${VENV_PY}" ]; then
+              "${VENV_PY}" -m ensurepip --upgrade || true
+            fi
+
+            if [ ! -x "${VENV_PIP}" ] && [ -x "${VENV_DIR}/bin/pip3" ]; then
+              ln -sf "${VENV_DIR}/bin/pip3" "${VENV_PIP}"
             fi
 
             if [ ! -x "${VENV_PY}" ] || [ ! -x "${VENV_PIP}" ]; then
