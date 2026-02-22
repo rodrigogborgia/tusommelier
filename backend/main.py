@@ -118,8 +118,16 @@ async def create_tavus_conversation(request: Request):
     if not tavus_api_key:
         raise HTTPException(status_code=500, detail="TAVUS_API_KEY is not configured")
 
-    replica_id = body.get("replica_id") or os.getenv("TAVUS_REPLICA_ID") or "rf4e9d9790f0"
-    persona_id = body.get("persona_id") or os.getenv("TAVUS_PERSONA_ID") or "pcb7a34da5fe"
+    replica_id = (
+        body.get("replica_id")
+        or os.getenv("TAVUS_REPLICA_ID")
+        or "rf4e9d9790f0"
+    )
+    persona_id = (
+        body.get("persona_id")
+        or os.getenv("TAVUS_PERSONA_ID")
+        or "pcb7a34da5fe"
+    )
 
     payload = {
         "replica_id": replica_id,
