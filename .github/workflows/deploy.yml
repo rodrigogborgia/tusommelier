@@ -147,6 +147,24 @@ jobs:
               exit 1
             fi
 
+            if ! command -v node >/dev/null 2>&1; then
+              echo "node is not installed on server. Install Node.js >= 20.19.0, then rerun deploy."
+              exit 1
+            fi
+
+            NODE_VERSION_RAW="$(node -v 2>/dev/null || true)"
+            NODE_VERSION="${NODE_VERSION_RAW#v}"
+            NODE_MIN="20.19.0"
+
+            if ! dpkg --compare-versions "${NODE_VERSION}" ge "${NODE_MIN}"; then
+              echo "Node.js version too old on server: ${NODE_VERSION_RAW}"
+              echo "Required minimum for current frontend toolchain: >= v${NODE_MIN}"
+              echo "Please upgrade Node.js on host and rerun deploy."
+              exit 1
+            fi
+
+            echo "Node.js version OK on server: ${NODE_VERSION_RAW}"
+
             "${VENV_PY}" -m pip install --upgrade pip
             "${VENV_PIP}" install -r "${APP_DIR}/backend/requirements.txt"
 

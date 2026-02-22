@@ -54,7 +54,7 @@ const MainVideo = React.memo(() => {
   );
 });
 
-export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply, inactivityLimitSeconds, onSaveContext, onNewConversation, onResumeConversation, shouldStartCall = true }: ConversationProps) => {
+export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply, inactivityLimitSeconds, onSaveContext, shouldStartCall = true }: ConversationProps) => {
   const { joinCall, leaveCall } = useCVICall();
   const meetingState = useMeetingState();
   const sendAppMessage = useAppMessage();

@@ -24,6 +24,22 @@ Este proyecto despliega en servidor por SSH con `systemd` + `nginx`, sin contene
 6. Valida y recarga `nginx`
 7. Reinicia `tusommelier-backend`
 
+## Requisito de Node.js en servidor
+
+El host de producción debe tener `node` y `npm` instalados.
+
+- Versión mínima requerida: `Node.js >= 20.19.0`
+- Motivo: compatibilidad con `vite@7` y `@vitejs/plugin-react@5`
+
+Verificación rápida en servidor:
+
+```bash
+node -v
+npm -v
+```
+
+Si `node -v` devuelve una versión menor a `v20.19.0`, actualizar Node.js antes de ejecutar deploy.
+
 ## Verificación post-deploy
 
 ```bash
