@@ -17,6 +17,12 @@ load_dotenv(
 app = FastAPI()
 logger = logging.getLogger(__name__)
 
+TAVUS_SPANISH_CONTEXT = (
+    "Instrucción de idioma: Respondé siempre en español rioplatense "
+    "(español argentino). No cambies a inglés salvo que el usuario lo pida "
+    "explícitamente."
+)
+
 # Configuración de CORS - Permite orígenes múltiples
 origins = [
     "http://localhost:3000",  # desarrollo local
@@ -136,7 +142,11 @@ async def create_tavus_conversation(request: Request):
 
     conversational_context = body.get("conversational_context")
     if conversational_context:
-        payload["conversational_context"] = conversational_context
+        payload["conversational_context"] = (
+            f"{conversational_context}\n\n{TAVUS_SPANISH_CONTEXT}"
+        )
+    else:
+        payload["conversational_context"] = TAVUS_SPANISH_CONTEXT
 
     try:
         response = requests.post(

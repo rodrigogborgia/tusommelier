@@ -3,8 +3,9 @@ import styles from "./avatar-layout.module.css";
 
 interface AvatarLayoutProps {
   avatarContent: ReactNode; // El video del avatar principal
-  controls: ReactNode; // Los botones de control
+  controls?: ReactNode; // Los botones de control
   headerContent?: ReactNode; // Contenido optional del header
+  expandAvatar?: boolean; // Expandir avatar cuando hay conversación activa
 }
 
 /**
@@ -16,6 +17,7 @@ export const AvatarLayout: React.FC<AvatarLayoutProps> = ({
   avatarContent,
   controls,
   headerContent,
+  expandAvatar = false,
 }) => {
   return (
     <div className={styles.container}>
@@ -23,12 +25,20 @@ export const AvatarLayout: React.FC<AvatarLayoutProps> = ({
       {headerContent && <div className={styles.header}>{headerContent}</div>}
 
       {/* Contenido principal - Avatar centrado */}
-      <div className={styles.mainContent}>{avatarContent}</div>
+      <div className={styles.mainContent}>
+        <div
+          className={`${styles.avatarShell} ${expandAvatar ? styles.avatarShellExpanded : ""}`}
+        >
+          {avatarContent}
+        </div>
+      </div>
 
       {/* Barra de controles inferior */}
-      <div className={styles.controlBar}>
-        <div className={styles.controlsContainer}>{controls}</div>
-      </div>
+      {controls && (
+        <div className={styles.controlBar}>
+          <div className={styles.controlsContainer}>{controls}</div>
+        </div>
+      )}
     </div>
   );
 };

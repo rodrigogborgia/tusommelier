@@ -138,11 +138,7 @@ const App: React.FC = () => {
     <CVIProvider>
       {showLayoutVerification ? (
         <AvatarLayout
-          headerContent={
-            <h1 style={{ margin: 0, color: "#6B0F1A", letterSpacing: "1px" }}>
-              ✨ Sommelier Digital
-            </h1>
-          }
+          expandAvatar={Boolean(conversationUrl)}
           avatarContent={
             conversationUrl ? (
               <Conversation
@@ -160,8 +156,8 @@ const App: React.FC = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: "#FFFFFF",
-                  color: "#3D2817",
+                  background: "#0f0f0f",
+                  color: "#ffffff",
                   fontSize: "1.1rem",
                   textAlign: "center",
                   padding: "1rem",
@@ -172,36 +168,22 @@ const App: React.FC = () => {
             )
           }
           controls={
-            <>
-              <ControlButton
-                icon="🎤"
-                label="Micrófono"
-                onClick={() => {}}
-                isActive
-              />
-              <ControlButton
-                icon="📹"
-                label="Cámara"
-                onClick={() => {}}
-                isActive
-              />
-              {!conversationUrl ? (
+            !conversationUrl ? (
+              <>
                 <ControlButton
                   icon="📞"
                   label="Iniciar"
                   onClick={() => startConversation(false)}
                 />
-              ) : (
-                <ControlButton icon="📞" label="En llamada" onClick={() => {}} />
-              )}
-              {!conversationUrl && hasContextAvailable && (
-                <ControlButton
-                  icon="♻️"
-                  label="Retomar"
-                  onClick={() => startConversation(true)}
-                />
-              )}
-            </>
+                {hasContextAvailable && (
+                  <ControlButton
+                    icon="♻️"
+                    label="Retomar"
+                    onClick={() => startConversation(true)}
+                  />
+                )}
+              </>
+            ) : undefined
           }
         />
       ) : (

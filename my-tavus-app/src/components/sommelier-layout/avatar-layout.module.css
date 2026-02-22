@@ -11,6 +11,7 @@
   --color-text-dark: #3d2817; /* Marrón oscuro */
   --color-text-light: #6b5d52; /* Marrón claro */
   --color-white: #ffffff;
+  --color-black: #0f0f0f;
   --color-shadow: rgba(107, 15, 26, 0.12); /* Sombra con tono burgundy */
 }
 
@@ -27,11 +28,7 @@
   justify-content: space-between;
 
   /* Fondo cálido de Espacio Sommelier */
-  background: linear-gradient(
-    135deg,
-    var(--color-bg-main) 0%,
-    var(--color-bg-secondary) 100%
-  );
+  background: linear-gradient(135deg, #141210 0%, #0b0b0b 100%);
 
   padding: 0;
   font-family: "Antonio", "Segoe UI", sans-serif;
@@ -86,7 +83,7 @@
   margin-bottom: auto;
 }
 
-.mainContent > * {
+.avatarShell {
   width: 100%;
   height: 100%;
   max-width: 600px;
@@ -96,13 +93,19 @@
   border: 3px solid var(--color-accent-gold-light);
   border-radius: 12px;
   overflow: hidden;
-  background: var(--color-white);
+  background: var(--color-black);
 
   /* Sombra sofisticada */
   box-shadow: 0 12px 40px var(--color-shadow),
     inset 0 0 20px rgba(224, 192, 151, 0.08);
 
   object-fit: cover;
+}
+
+.avatarShellExpanded {
+  max-width: min(1400px, 98vw);
+  max-height: calc(100vh - 160px);
+  aspect-ratio: auto;
 }
 
 /* ========================================
@@ -117,11 +120,7 @@
   flex-shrink: 0;
 
   /* Gradiente sutil con efecto flotante */
-  background: linear-gradient(
-    180deg,
-    rgba(250, 243, 224, 0.8) 0%,
-    rgba(245, 234, 214, 0.95) 100%
-  );
+  background: linear-gradient(180deg, rgba(15, 15, 15, 0.72) 0%, rgba(15, 15, 15, 0.92) 100%);
 
   border-top: 2px solid var(--color-accent-gold-light);
   box-shadow: 0 -2px 8px var(--color-shadow);
@@ -138,7 +137,7 @@
   flex-wrap: wrap;
 
   /* Fondo de los controles */
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(15, 15, 15, 0.96);
   padding: 0.75rem 1.25rem;
   border-radius: 50px;
 
@@ -153,9 +152,15 @@
    Responsive Design - Tablet
    ======================================== */
 @media (min-width: 769px) {
-  .mainContent > * {
+  .avatarShell {
     max-width: 800px;
     aspect-ratio: 16/9;
+  }
+
+  .avatarShellExpanded {
+    max-width: min(1600px, 98vw);
+    max-height: calc(100vh - 170px);
+    aspect-ratio: auto;
   }
 }
 
@@ -171,12 +176,18 @@
     padding: 0.75rem;
   }
 
-  .mainContent > * {
+  .avatarShell {
     max-width: 100%;
     aspect-ratio: 1/1;
     max-height: 55vh;
     border-width: 2px;
     border-radius: 10px;
+  }
+
+  .avatarShellExpanded {
+    max-width: 100%;
+    max-height: calc(100vh - 120px);
+    aspect-ratio: auto;
   }
 
   .controlBar {
@@ -200,9 +211,13 @@
     min-height: 100vh;
   }
 
-  .mainContent > * {
+  .avatarShell {
     max-height: 70vh;
     border-radius: 10px;
+  }
+
+  .avatarShellExpanded {
+    max-height: calc(100vh - 110px);
   }
 
   .header {

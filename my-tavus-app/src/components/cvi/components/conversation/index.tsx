@@ -267,6 +267,36 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply
     }
   }, [meetingState, backendReply, sendAppMessage]);
 
+  // Watchdog de idioma: refuerza periódicamente español rioplatense durante la sesión
+  useEffect(() => {
+    if (meetingState !== "joined-meeting") {
+      return;
+    }
+
+    const reminderText =
+      "Recordatorio del sistema: mantené toda la conversación en español rioplatense. No cambies a inglés salvo pedido explícito del usuario.";
+
+    const sendLanguageReminder = () => {
+      sendAppMessage({
+        message_type: "conversation",
+        event_type: "conversation.echo",
+        properties: {
+          text: reminderText,
+        },
+      });
+    };
+
+    // Primer refuerzo poco después de conectar
+    const initialTimeoutId = window.setTimeout(sendLanguageReminder, 8000);
+    // Refuerzo periódico (cada 90s)
+    const intervalId = window.setInterval(sendLanguageReminder, 90000);
+
+    return () => {
+      window.clearTimeout(initialTimeoutId);
+      window.clearInterval(intervalId);
+    };
+  }, [meetingState, sendAppMessage]);
+
   return (
     <div className={styles.container}>
       {/* HEADER CON LOGO */}
