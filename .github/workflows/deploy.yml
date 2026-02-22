@@ -52,8 +52,9 @@ jobs:
             exit 1
           fi
 
-          if ! printf '%s' "${DEPLOY_KEY}" | grep -q "BEGIN OPENSSH PRIVATE KEY"; then
-            echo "Invalid KEY secret format. Expected an OpenSSH Ed25519 private key."
+          KEY_HEADER="$(printf '%s' "${DEPLOY_KEY}" | tr -d '\r' | head -n 1)"
+          if [ "${KEY_HEADER}" != "-----BEGIN OPENSSH PRIVATE KEY-----" ] && [ "${KEY_HEADER}" != "-----BEGIN PRIVATE KEY-----" ]; then
+            echo "Invalid KEY secret format. Expected a valid private key block (OpenSSH or PKCS8 Ed25519)."
             exit 1
           fi
 
