@@ -110,7 +110,7 @@ async def conversation(request: Request):
 @app.get("/health")
 async def health_check():
     """Health check endpoint para verificar que el servidor está activo"""
-    return {"status": "ok", "service": "tusommelier-backend"}
+    return {"status": "ok"}
 
 
 @app.get("/metrics")
