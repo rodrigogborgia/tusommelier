@@ -153,17 +153,39 @@ jobs:
 
             sudo systemctl daemon-reload
             sudo systemctl enable tusommelier-backend
-            sudo systemctl restart tusommelier-backend
+            sudo systemctl stop tusommelier-backend || true
+            sudo systemctl reset-failed tusommelier-backend || true
+            sudo pkill -f "uvicorn main:app --host 127.0.0.1 --port 8000" || true
+            sudo systemctl start tusommelier-backend
             sudo systemctl --no-pager --full status tusommelier-backend | head -n 20
 
-            if ! curl -fsS --connect-timeout 5 --max-time 20 --retry 5 --retry-delay 2 http://127.0.0.1:8000/health >/dev/null; then
+            BACKEND_READY=0
+            for _ in $(seq 1 20); do
+              if sudo systemctl is-active --quiet tusommelier-backend && curl -fsS --connect-timeout 3 --max-time 8 http://127.0.0.1:8000/health >/dev/null 2>&1; then
+                BACKEND_READY=1
+                break
+              fi
+              sleep 2
+            done
+
+            if [ "${BACKEND_READY}" != "1" ]; then
               echo "Backend health check failed on 127.0.0.1:8000"
+              sudo systemctl --no-pager --full status tusommelier-backend | head -n 40 || true
               sudo journalctl -u tusommelier-backend -n 120 --no-pager
               exit 1
             fi
 
-            API_STATUS=$(curl -sS --connect-timeout 5 --max-time 25 --retry 5 --retry-delay 2 -o /tmp/tusommelier_api_health.txt -w "%{http_code}" -H "Host: tusommeliervirtual.com" http://127.0.0.1/api/health)
-            if [ "${API_STATUS}" != "200" ]; then
+            API_OK=0
+            for _ in $(seq 1 15); do
+              API_STATUS=$(curl -sS --connect-timeout 3 --max-time 10 -o /tmp/tusommelier_api_health.txt -w "%{http_code}" -H "Host: tusommeliervirtual.com" http://127.0.0.1/api/health || true)
+              if [ "${API_STATUS}" = "200" ]; then
+                API_OK=1
+                break
+              fi
+              sleep 2
+            done
+
+            if [ "${API_OK}" != "1" ]; then
               echo "Nginx /api health check failed with status ${API_STATUS}"
               cat /tmp/tusommelier_api_health.txt || true
               sudo tail -n 100 /var/log/nginx/tusommelier_error.log || true
