@@ -187,6 +187,11 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl enable tusommelier-backend
             sudo systemctl reset-failed tusommelier-backend || true
+
+            echo "Liberando puerto 8000 antes de iniciar backend"
+            sudo fuser -k 8000/tcp || true
+            sudo lsof -t -i:8000 | xargs -r sudo kill -9 || true
+
             sudo systemctl restart tusommelier-backend
             sudo systemctl --no-pager --full status tusommelier-backend | head -n 20
 
