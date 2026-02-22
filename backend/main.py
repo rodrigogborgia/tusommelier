@@ -161,11 +161,17 @@ async def create_tavus_conversation(request: Request):
 
     participant_left_timeout = incoming_properties.get(
         "participant_left_timeout",
-        body.get("participant_left_timeout", int(os.getenv("TAVUS_PARTICIPANT_LEFT_TIMEOUT", "0"))),
+        body.get(
+            "participant_left_timeout",
+            int(os.getenv("TAVUS_PARTICIPANT_LEFT_TIMEOUT", "0")),
+        ),
     )
     participant_absent_timeout = incoming_properties.get(
         "participant_absent_timeout",
-        body.get("participant_absent_timeout", int(os.getenv("TAVUS_PARTICIPANT_ABSENT_TIMEOUT", "120"))),
+        body.get(
+            "participant_absent_timeout",
+            int(os.getenv("TAVUS_PARTICIPANT_ABSENT_TIMEOUT", "120")),
+        ),
     )
 
     payload = {
