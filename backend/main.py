@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 import logging
 import sentry_sdk
+import requests
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from fastapi.responses import Response
 
@@ -105,6 +106,54 @@ async def conversation(request: Request):
             status_code=502,
             detail=f"OpenAI request failed: {exc}",
         )
+
+
+@app.post("/tavus/conversations")
+async def create_tavus_conversation(request: Request):
+    body = await request.json()
+
+    tavus_api_key = os.getenv("TAVUS_API_KEY")
+    tavus_api_url = os.getenv("TAVUS_API_URL", "https://tavusapi.com")
+
+    if not tavus_api_key:
+        raise HTTPException(status_code=500, detail="TAVUS_API_KEY is not configured")
+
+    replica_id = body.get("replica_id") or os.getenv("TAVUS_REPLICA_ID") or "rf4e9d9790f0"
+    persona_id = body.get("persona_id") or os.getenv("TAVUS_PERSONA_ID") or "pcb7a34da5fe"
+
+    payload = {
+        "replica_id": replica_id,
+        "persona_id": persona_id,
+        "participant_left_timeout": 120000,
+    }
+
+    conversational_context = body.get("conversational_context")
+    if conversational_context:
+        payload["conversational_context"] = conversational_context
+
+    try:
+        response = requests.post(
+            f"{tavus_api_url.rstrip('/')}/v2/conversations",
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": tavus_api_key,
+            },
+            json=payload,
+            timeout=20,
+        )
+
+        if not response.ok:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Tavus error: {response.text}",
+            )
+
+        return response.json()
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Tavus request failed")
+        raise HTTPException(status_code=502, detail=f"Tavus request failed: {exc}")
 
 
 @app.get("/health")

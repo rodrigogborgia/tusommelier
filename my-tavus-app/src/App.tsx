@@ -95,7 +95,7 @@ const App: React.FC = () => {
       // 2. Crear conversación en Tavus usando la respuesta del backend
       const savedContext = useContext ? conversationalContext : null;
       const data = await createConversation(
-        import.meta.env.VITE_TAVUS_API_KEY || "",
+        BACKEND_URL,
         import.meta.env.VITE_REPLICA_ID || "rf4e9d9790f0",
         import.meta.env.VITE_PERSONA_ID || "pcb7a34da5fe",
         savedContext || undefined,

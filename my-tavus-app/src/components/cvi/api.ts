@@ -1,7 +1,7 @@
 // src/components/cvi/api.ts
 
 export async function createConversation(
-  apiKey: string,
+  backendUrl: string,
   replicaId: string,
   personaId: string,
   conversationalContext?: string,
@@ -17,11 +17,10 @@ export async function createConversation(
     payload.conversational_context = conversationalContext;
   }
 
-  const response = await fetch("https://tavusapi.com/v2/conversations", {
+  const response = await fetch(`${backendUrl}/tavus/conversations`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": apiKey,
     },
     body: JSON.stringify(payload),
   });
