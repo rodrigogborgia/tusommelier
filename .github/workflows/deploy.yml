@@ -52,9 +52,17 @@ jobs:
             exit 1
           fi
 
-          KEY_HEADER="$(printf '%s' "${DEPLOY_KEY}" | tr -d '\r' | head -n 1)"
-          if [ "${KEY_HEADER}" != "-----BEGIN OPENSSH PRIVATE KEY-----" ] && [ "${KEY_HEADER}" != "-----BEGIN PRIVATE KEY-----" ]; then
-            echo "Invalid KEY secret format. Expected a valid private key block (OpenSSH or PKCS8 Ed25519)."
+          NORMALIZED_KEY="$(printf '%b' "${DEPLOY_KEY}" | tr -d '\r' | sed '1s/^"//' | sed '$s/"$//')"
+          KEY_HEADER="$(printf '%s' "${NORMALIZED_KEY}" | sed -n '1p')"
+
+          if printf '%s' "${NORMALIZED_KEY}" | grep -Eq '^ssh-(ed25519|rsa) '; then
+            echo "Invalid KEY secret: a PUBLIC key was provided. Configure KEY with the PRIVATE key content (BEGIN ... PRIVATE KEY)."
+            exit 1
+          fi
+
+          if [ "${KEY_HEADER}" != "-----BEGIN OPENSSH PRIVATE KEY-----" ] && [ "${KEY_HEADER}" != "-----BEGIN PRIVATE KEY-----" ] && [ "${KEY_HEADER}" != "-----BEGIN RSA PRIVATE KEY-----" ] && [ "${KEY_HEADER}" != "-----BEGIN EC PRIVATE KEY-----" ]; then
+            echo "Invalid KEY secret format. Expected a valid private key block header."
+            echo "Current first line: ${KEY_HEADER}"
             exit 1
           fi
 
