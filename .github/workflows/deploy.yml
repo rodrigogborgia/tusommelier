@@ -111,24 +111,14 @@ jobs:
 
             if [ ! -x "${VENV_PY}" ] || [ ! -x "${VENV_PIP}" ]; then
               echo "[deploy] Reparando/creando virtualenv en ${VENV_DIR}"
-              if [ ! -d "${VENV_DIR}" ]; then
-                python3 -m venv --copies "${VENV_DIR}" || {
-                  echo "[deploy] venv falló; intentando instalar python3-venv/python3-pip"
-                  sudo apt-get update -y
-                  sudo apt-get install -y python3-venv python3-pip
-                  python3 -m venv --copies "${VENV_DIR}"
-                }
-              else
-                python3 -m venv --upgrade "${VENV_DIR}" || {
-                  rm -rf "${VENV_DIR}"
-                  python3 -m venv --copies "${VENV_DIR}" || {
-                    echo "[deploy] recreación de venv falló; instalando python3-venv/python3-pip y reintentando"
-                    sudo apt-get update -y
-                    sudo apt-get install -y python3-venv python3-pip
-                    python3 -m venv --copies "${VENV_DIR}"
-                  }
-                }
-              fi
+              sudo rm -rf "${VENV_DIR}" || true
+              python3 -m venv --copies "${VENV_DIR}" || {
+                echo "[deploy] creación de venv falló; instalando python3-venv/python3-pip y reintentando"
+                sudo apt-get update -y
+                sudo apt-get install -y python3-venv python3-pip
+                python3 -m venv --copies "${VENV_DIR}"
+              }
+              sudo chown -R "$(id -un)":"$(id -gn)" "${VENV_DIR}" || true
             fi
 
             if [ ! -x "${VENV_PY}" ] && [ -x "${VENV_DIR}/bin/python" ]; then
