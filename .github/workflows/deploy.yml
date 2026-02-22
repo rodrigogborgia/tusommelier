@@ -170,6 +170,7 @@ jobs:
             fi
 
             sudo cp nginx.conf /etc/nginx/sites-available/tusommelier
+            sudo rm -f /etc/nginx/sites-enabled/default
             sudo ln -sfn /etc/nginx/sites-available/tusommelier /etc/nginx/sites-enabled/tusommelier
             sudo nginx -t
             sudo systemctl reload nginx
@@ -208,6 +209,16 @@ jobs:
                 API_OK=1
                 break
               fi
+
+              if [ "${API_STATUS}" = "301" ] || [ "${API_STATUS}" = "302" ] || [ "${API_STATUS}" = "307" ] || [ "${API_STATUS}" = "308" ]; then
+                HTTPS_STATUS=$(curl -sS --connect-timeout 3 --max-time 10 --resolve tusommeliervirtual.com:443:127.0.0.1 -o /tmp/tusommelier_api_health.txt -w "%{http_code}" https://tusommeliervirtual.com/api/health || true)
+                if [ "${HTTPS_STATUS}" = "200" ]; then
+                  API_OK=1
+                  API_STATUS="${HTTPS_STATUS}"
+                  break
+                fi
+              fi
+
               sleep 2
             done
 
