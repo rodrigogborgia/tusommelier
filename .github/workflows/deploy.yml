@@ -100,19 +100,12 @@ jobs:
 
             cd "${APP_DIR}"
 
-            sudo apt-get update
-            sudo apt-get install -y nginx python3 python3-venv python3-pip curl ca-certificates gnupg
-
-            if ! command -v node >/dev/null 2>&1 || [ "$(node -v | sed 's/v//' | cut -d. -f1)" -lt 20 ]; then
-              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-              sudo apt-get install -y nodejs
-            fi
-
             git fetch origin main
             git reset --hard origin/main
 
-            rm -rf "${VENV_DIR}"
-            python3 -m venv --copies "${VENV_DIR}"
+            if [ ! -x "${VENV_PY}" ] || [ ! -x "${VENV_PIP}" ]; then
+              python3 -m venv --copies "${VENV_DIR}"
+            fi
 
             if [ ! -x "${VENV_PY}" ] && [ -x "${VENV_DIR}/bin/python" ]; then
               ln -s "${VENV_DIR}/bin/python" "${VENV_PY}"
@@ -120,6 +113,11 @@ jobs:
 
             if [ ! -x "${VENV_PY}" ] || [ ! -x "${VENV_PIP}" ]; then
               echo "Virtualenv binaries not found in ${VENV_DIR}/bin"
+              exit 1
+            fi
+
+            if ! command -v npm >/dev/null 2>&1; then
+              echo "npm is not installed on server. Install Node.js/npm once on host, then rerun deploy."
               exit 1
             fi
 
@@ -148,15 +146,12 @@ jobs:
             sudo cp nginx.conf /etc/nginx/sites-available/tusommelier
             sudo ln -sfn /etc/nginx/sites-available/tusommelier /etc/nginx/sites-enabled/tusommelier
             sudo nginx -t
-            sudo systemctl enable nginx
             sudo systemctl reload nginx
 
             sudo systemctl daemon-reload
             sudo systemctl enable tusommelier-backend
-            sudo systemctl stop tusommelier-backend || true
             sudo systemctl reset-failed tusommelier-backend || true
-            sudo pkill -f "uvicorn main:app --host 127.0.0.1 --port 8000" || true
-            sudo systemctl start tusommelier-backend
+            sudo systemctl restart tusommelier-backend
             sudo systemctl --no-pager --full status tusommelier-backend | head -n 20
 
             BACKEND_READY=0
