@@ -132,7 +132,6 @@ async def create_tavus_conversation(request: Request):
     payload = {
         "replica_id": replica_id,
         "persona_id": persona_id,
-        "participant_left_timeout": 120000,
     }
 
     conversational_context = body.get("conversational_context")
