@@ -18,9 +18,17 @@ app = FastAPI()
 logger = logging.getLogger(__name__)
 
 TAVUS_SPANISH_CONTEXT = (
-    "Instrucción de idioma: Respondé siempre en español rioplatense "
-    "(español argentino). No cambies a inglés salvo que el usuario lo pida "
-    "explícitamente."
+    "INSTRUCCIÓN CRÍTICA DE IDIOMA Y VOZ: hablá SIEMPRE en español argentino "
+    "(es-AR, rioplatense). Nunca respondas en inglés. Si el usuario habla en "
+    "inglés, entendelo pero respondé igualmente en español argentino. "
+    "Usá voseo (vos, tenés, podés), vocabulario argentino y pronunciación "
+    "natural rioplatense. No traduzcas al inglés salvo pedido explícito del "
+    "usuario."
+)
+
+DEFAULT_TAVUS_GREETING = (
+    "¡Hola! Bienvenido a Tu Sommelier Virtual de carnes. "
+    "Estoy acá para ayudarte a elegir el mejor corte."
 )
 
 # Configuración de CORS - Permite orígenes múltiples
@@ -135,9 +143,41 @@ async def create_tavus_conversation(request: Request):
         or "pcb7a34da5fe"
     )
 
+    custom_greeting = (
+        body.get("custom_greeting")
+        or os.getenv("TAVUS_CUSTOM_GREETING")
+        or DEFAULT_TAVUS_GREETING
+    )
+
+    configured_language = (
+        body.get("language")
+        or os.getenv("TAVUS_LANGUAGE")
+        or "spanish"
+    )
+
+    incoming_properties = body.get("properties")
+    if not isinstance(incoming_properties, dict):
+        incoming_properties = {}
+
+    participant_left_timeout = incoming_properties.get(
+        "participant_left_timeout",
+        body.get("participant_left_timeout", int(os.getenv("TAVUS_PARTICIPANT_LEFT_TIMEOUT", "0"))),
+    )
+    participant_absent_timeout = incoming_properties.get(
+        "participant_absent_timeout",
+        body.get("participant_absent_timeout", int(os.getenv("TAVUS_PARTICIPANT_ABSENT_TIMEOUT", "120"))),
+    )
+
     payload = {
         "replica_id": replica_id,
         "persona_id": persona_id,
+        "custom_greeting": custom_greeting,
+        "properties": {
+            **incoming_properties,
+            "participant_left_timeout": participant_left_timeout,
+            "participant_absent_timeout": participant_absent_timeout,
+            "language": configured_language,
+        },
     }
 
     conversational_context = body.get("conversational_context")
@@ -149,15 +189,46 @@ async def create_tavus_conversation(request: Request):
         payload["conversational_context"] = TAVUS_SPANISH_CONTEXT
 
     try:
+        tavus_endpoint = f"{tavus_api_url.rstrip('/')}/v2/conversations"
+        tavus_headers = {
+            "Content-Type": "application/json",
+            "x-api-key": tavus_api_key,
+        }
+
         response = requests.post(
-            f"{tavus_api_url.rstrip('/')}/v2/conversations",
-            headers={
-                "Content-Type": "application/json",
-                "x-api-key": tavus_api_key,
-            },
+            tavus_endpoint,
+            headers=tavus_headers,
             json=payload,
             timeout=20,
         )
+
+        language_value = str(configured_language).lower()
+        should_retry_with_spanish = language_value != "spanish"
+
+        if not response.ok and should_retry_with_spanish:
+            logger.warning(
+                "Tavus rechazó language='%s'. Reintentando con language='spanish'.",
+                configured_language,
+            )
+            fallback_payload = {
+                **payload,
+                "properties": {
+                    **payload.get("properties", {}),
+                    "language": "spanish",
+                },
+            }
+            fallback_response = requests.post(
+                tavus_endpoint,
+                headers=tavus_headers,
+                json=fallback_payload,
+                timeout=20,
+            )
+            if fallback_response.ok:
+                return fallback_response.json()
+            raise HTTPException(
+                status_code=fallback_response.status_code,
+                detail=f"Tavus error (fallback spanish): {fallback_response.text}",
+            )
 
         if not response.ok:
             raise HTTPException(

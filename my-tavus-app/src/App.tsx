@@ -172,7 +172,9 @@ const App: React.FC = () => {
               <>
                 <ControlButton
                   icon="📞"
-                  label="Iniciar"
+                  iconOnly
+                  plain
+                  title="Iniciar"
                   onClick={() => startConversation(false)}
                 />
                 {hasContextAvailable && (

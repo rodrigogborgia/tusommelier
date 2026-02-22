@@ -191,3 +191,29 @@
 .button:active:not(:disabled) {
   animation: buttonPulse 0.3s ease-out;
 }
+
+.iconOnly {
+  padding: 0.25rem;
+  min-width: 36px;
+  min-height: 36px;
+  gap: 0;
+}
+
+.plain {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--color-white);
+}
+
+.plain:hover:not(:disabled) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transform: scale(1.05);
+}
+
+.plain:focus-visible {
+  outline: 2px solid var(--color-accent-gold-light);
+  outline-offset: 2px;
+}

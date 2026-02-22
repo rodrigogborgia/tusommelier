@@ -8,6 +8,8 @@ interface ControlButtonProps {
   disabled?: boolean;
   isActive?: boolean; // Para botones de toggle
   title?: string; // Tooltip
+  iconOnly?: boolean;
+  plain?: boolean;
 }
 
 /**
@@ -21,19 +23,23 @@ export const ControlButton: React.FC<ControlButtonProps> = ({
   disabled = false,
   isActive = false,
   title,
+  iconOnly = false,
+  plain = false,
 }) => {
+  const ariaLabel = label || title || "control";
+
   return (
     <button
       className={`${styles.button} ${isActive ? styles.active : ""} ${
         disabled ? styles.disabled : ""
-      }`}
+      } ${iconOnly ? styles.iconOnly : ""} ${plain ? styles.plain : ""}`}
       onClick={onClick}
       disabled={disabled}
       title={title || label}
-      aria-label={label}
+      aria-label={ariaLabel}
     >
       {icon && <span className={styles.icon}>{icon}</span>}
-      {label && <span className={styles.label}>{label}</span>}
+      {!iconOnly && label && <span className={styles.label}>{label}</span>}
     </button>
   );
 };

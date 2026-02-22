@@ -74,7 +74,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 0.5rem 0.5rem 0.25rem;
   min-height: 0; /* Importante para flex */
   overflow: hidden;
 
@@ -113,19 +113,11 @@
    ======================================== */
 .controlBar {
   width: 100%;
-  padding: 1.25rem 1rem;
+  padding: 0.25rem 0.5rem 0.35rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-
-  /* Gradiente sutil con efecto flotante */
-  background: linear-gradient(180deg, rgba(15, 15, 15, 0.72) 0%, rgba(15, 15, 15, 0.92) 100%);
-
-  border-top: 2px solid var(--color-accent-gold-light);
-  box-shadow: 0 -2px 8px var(--color-shadow);
-
-  backdrop-filter: blur(8px);
 }
 
 /* Contenedor de los botones */
@@ -133,17 +125,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 
-  /* Fondo de los controles */
-  background: rgba(15, 15, 15, 0.96);
-  padding: 0.75rem 1.25rem;
-  border-radius: 50px;
-
-  /* Marco dorado elegante */
-  border: 2px solid var(--color-accent-gold);
-  box-shadow: 0 4px 16px var(--color-shadow);
+  padding: 0.15rem 0.35rem;
 
   max-width: 95%;
 }
@@ -173,7 +158,7 @@
   }
 
   .mainContent {
-    padding: 0.75rem;
+    padding: 0.35rem 0.35rem 0.2rem;
   }
 
   .avatarShell {
@@ -191,14 +176,12 @@
   }
 
   .controlBar {
-    padding: 1rem 0.75rem;
-    border-top-width: 2px;
+    padding: 0.2rem 0.35rem 0.3rem;
   }
 
   .controlsContainer {
-    gap: 8px;
-    padding: 0.6rem 1rem;
-    border-radius: 40px;
+    gap: 6px;
+    padding: 0.1rem 0.25rem;
   }
 }
 
@@ -225,7 +208,7 @@
   }
 
   .controlBar {
-    padding: 0.75rem;
+    padding: 0.2rem 0.35rem;
   }
 }
 

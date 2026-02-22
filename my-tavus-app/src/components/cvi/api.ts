@@ -9,7 +9,13 @@ export async function createConversation(
   const payload: any = {
     replica_id: replicaId,
     persona_id: personaId,
-    participant_left_timeout: 120000, // 2 minutos en ms
+    custom_greeting:
+      "¡Hola! Bienvenido a Tu Sommelier Virtual de carnes. Estoy acá para ayudarte a elegir el mejor corte.",
+    properties: {
+      participant_left_timeout: 0,
+      participant_absent_timeout: 120,
+      language: "spanish",
+    },
   };
 
   // Si hay contexto previo, incluirlo
