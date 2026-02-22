@@ -10,10 +10,10 @@ permissions:
   contents: read
 
 env:
-  DEPLOY_HOST: ${{ secrets.SERVER_HOST || secrets.HOST }}
-  DEPLOY_USER: ${{ secrets.SERVER_USER || secrets.USERNAME }}
-  DEPLOY_KEY: ${{ secrets.DEPLOY_KEY || secrets.KEY }}
-  DEPLOY_PORT: ${{ secrets.SERVER_PORT || '22' }}
+  DEPLOY_HOST: ${{ secrets.HOST }}
+  DEPLOY_USER: ${{ secrets.USERNAME }}
+  DEPLOY_KEY: ${{ secrets.KEY }}
+  DEPLOY_PORT: '22'
 
 jobs:
   deploy:
@@ -33,17 +33,27 @@ jobs:
           set -euo pipefail
 
           if [ -z "${DEPLOY_HOST}" ]; then
-            echo "Missing SSH host secret. Configure SERVER_HOST or HOST."
+            echo "Missing SSH host secret. Configure HOST."
             exit 1
           fi
 
           if [ -z "${DEPLOY_USER}" ]; then
-            echo "Missing SSH user secret. Configure SERVER_USER or USERNAME."
+            echo "Missing SSH user secret. Configure USERNAME."
             exit 1
           fi
 
           if [ -z "${DEPLOY_KEY}" ]; then
-            echo "Missing SSH private key secret. Configure DEPLOY_KEY or KEY."
+            echo "Missing SSH private key secret. Configure KEY (Ed25519 private key)."
+            exit 1
+          fi
+
+          if [ "${DEPLOY_USER}" != "rodrigo" ]; then
+            echo "Invalid SSH user in USERNAME secret. Expected: rodrigo"
+            exit 1
+          fi
+
+          if ! printf '%s' "${DEPLOY_KEY}" | grep -q "BEGIN OPENSSH PRIVATE KEY"; then
+            echo "Invalid KEY secret format. Expected an OpenSSH Ed25519 private key."
             exit 1
           fi
 
@@ -68,7 +78,7 @@ jobs:
           username: ${{ env.DEPLOY_USER }}
           key: ${{ env.DEPLOY_KEY }}
           port: ${{ env.DEPLOY_PORT }}
-          timeout: 60s
+          timeout: 120s
           command_timeout: 70m
           script_stop: true
           script: |

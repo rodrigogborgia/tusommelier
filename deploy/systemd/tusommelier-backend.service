@@ -10,7 +10,8 @@ Group=__SERVER_USER__
 WorkingDirectory=/home/__SERVER_USER__/tusommelier/backend
 Environment=PYTHONUNBUFFERED=1
 EnvironmentFile=/home/__SERVER_USER__/tusommelier/config/secrets.env
-ExecStart=/home/__SERVER_USER__/tusommelier/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+ExecStartPre=/usr/bin/test -x /home/__SERVER_USER__/tusommelier/.venv/bin/python3
+ExecStart=/home/__SERVER_USER__/tusommelier/.venv/bin/python3 -m uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=5
 
