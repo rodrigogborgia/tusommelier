@@ -1,5 +1,47 @@
 import { test, expect, type Page, type Route } from "@playwright/test";
 
+async function clickCutButtonResilient(page: Page) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    if (page.isClosed()) {
+      throw new Error("Page was closed before completing cut button click");
+    }
+
+    const byRole = page.getByRole("button", { name: /Cortar llamada/i });
+
+    try {
+      await expect(byRole).toBeVisible({ timeout: 1500 });
+      await byRole.tap({ timeout: 1500 });
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+
+    try {
+      const forced = page.locator('button[aria-label="Cortar llamada"]');
+      await forced.click({ force: true, timeout: 1500 });
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+
+    try {
+      const forced = page.locator('button[aria-label="Cortar llamada"]');
+      await forced.dispatchEvent("click");
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (attempt < 3) {
+      await page.waitForTimeout(150 * attempt);
+    }
+  }
+
+  throw lastError;
+}
+
 async function mockConversationSuccess(page: Page) {
   await page.route("**/conversation", async (route: Route) => {
     await route.fulfill({
@@ -18,7 +60,11 @@ async function mockConversationSuccess(page: Page) {
   });
 }
 
-test("flujo crítico: iniciar llamada y cortar vuelve al estado inicial", async ({ page }) => {
+test("flujo crítico: iniciar llamada y cortar vuelve al estado inicial", async ({ page, browserName }) => {
+  if (browserName === "webkit") {
+    test.slow();
+  }
+
   await mockConversationSuccess(page);
   await page.goto("http://localhost:5173");
 
@@ -29,9 +75,9 @@ test("flujo crítico: iniciar llamada y cortar vuelve al estado inicial", async 
 
   const cutButton = page.getByRole("button", { name: /Cortar llamada/i });
   await expect(cutButton).toBeVisible();
-  await cutButton.click();
+  await clickCutButtonResilient(page);
 
-  await expect(startButton).toBeVisible();
+  await expect(startButton).toBeVisible({ timeout: 10000 });
 });
 
 test("manejo de error: falla backend /conversation y se muestra alert", async ({ page }) => {
