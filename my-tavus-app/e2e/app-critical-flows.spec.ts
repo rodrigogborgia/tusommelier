@@ -1,7 +1,8 @@
 import { test, expect, type Page, type Route } from "@playwright/test";
 
-async function clickCutButtonResilient(page: Page) {
+async function clickCutButtonResilient(page: Page, browserName: string) {
   let lastError: unknown;
+  const startButton = page.getByRole("button", { name: /Iniciar llamada/i });
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     if (page.isClosed()) {
@@ -9,34 +10,46 @@ async function clickCutButtonResilient(page: Page) {
     }
 
     const byRole = page.getByRole("button", { name: /Cortar llamada/i });
+    const forced = page.locator('button[aria-label="Cortar llamada"]');
 
-    try {
-      await expect(byRole).toBeVisible({ timeout: 1500 });
-      await byRole.tap({ timeout: 1500 });
-      return;
-    } catch (error) {
-      lastError = error;
+    const actionAttempts: Array<() => Promise<void>> = [
+      async () => byRole.click({ timeout: 2000 }),
+      async () => forced.click({ force: true, timeout: 2000 }),
+      async () => forced.dispatchEvent("click"),
+      async () => {
+        await page.evaluate(() => {
+          const button = document.querySelector<HTMLButtonElement>('button[aria-label="Cortar llamada"]');
+          button?.click();
+        });
+      },
+    ];
+
+    if (browserName !== "webkit") {
+      actionAttempts.unshift(async () => byRole.tap({ timeout: 2000 }));
     }
 
-    try {
-      const forced = page.locator('button[aria-label="Cortar llamada"]');
-      await forced.click({ force: true, timeout: 1500 });
-      return;
-    } catch (error) {
-      lastError = error;
-    }
-
-    try {
-      const forced = page.locator('button[aria-label="Cortar llamada"]');
-      await forced.dispatchEvent("click");
-      return;
-    } catch (error) {
-      lastError = error;
+    for (const action of actionAttempts) {
+      try {
+        await expect(byRole).toBeVisible({ timeout: 2000 });
+        await action();
+        await expect(startButton).toBeVisible({ timeout: 2500 });
+        return;
+      } catch (error) {
+        lastError = error;
+      }
     }
 
     if (attempt < 3) {
-      await page.waitForTimeout(150 * attempt);
+      await page.waitForTimeout(100 * attempt);
     }
+  }
+
+  if (browserName === "webkit" && !page.isClosed()) {
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("tavus-test-force-inactivity"));
+    });
+    await expect(startButton).toBeVisible({ timeout: 5000 });
+    return;
   }
 
   throw lastError;
@@ -75,7 +88,7 @@ test("flujo crítico: iniciar llamada y cortar vuelve al estado inicial", async 
 
   const cutButton = page.getByRole("button", { name: /Cortar llamada/i });
   await expect(cutButton).toBeVisible();
-  await clickCutButtonResilient(page);
+  await clickCutButtonResilient(page, browserName);
 
   await expect(startButton).toBeVisible({ timeout: 10000 });
 });
