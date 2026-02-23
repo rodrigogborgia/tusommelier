@@ -172,9 +172,9 @@ const App: React.FC = () => {
               <>
                 <ControlButton
                   icon="📞"
-                  iconOnly
-                  plain
-                  title="Iniciar"
+                  label="Iniciar llamada"
+                  title="Iniciar llamada"
+                  mobileFullWidth
                   onClick={() => startConversation(false)}
                 />
                 {hasContextAvailable && (

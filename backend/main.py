@@ -17,6 +17,11 @@ load_dotenv(
 app = FastAPI()
 logger = logging.getLogger(__name__)
 
+
+def _sanitize_for_log(value: object) -> str:
+    text = str(value)
+    return text.replace("\r", "\\r").replace("\n", "\\n")
+
 TAVUS_SPANISH_CONTEXT = (
     "INSTRUCCIÓN CRÍTICA DE IDIOMA Y VOZ: hablá SIEMPRE en español argentino "
     "(es-AR, rioplatense). Nunca respondas en inglés. Si el usuario habla en "
@@ -212,9 +217,10 @@ async def create_tavus_conversation(request: Request):
         should_retry_with_spanish = language_value != "spanish"
 
         if not response.ok and should_retry_with_spanish:
+            safe_language = _sanitize_for_log(configured_language)
             logger.warning(
                 "Tavus rechazó language='%s'. Reintentando con language='spanish'.",
-                configured_language,
+                safe_language,
             )
             fallback_payload = {
                 **payload,
@@ -253,7 +259,7 @@ async def create_tavus_conversation(request: Request):
 @app.get("/health")
 async def health_check():
     """Health check endpoint para verificar que el servidor está activo"""
-    return {"status": "ok"}
+    return {"status": "ok", "service": "tusommelier-backend"}
 
 
 @app.get("/metrics")

@@ -57,6 +57,7 @@
   -webkit-user-select: none;
   -webkit-appearance: none;
   -webkit-touch-callout: none;
+  touch-action: manipulation;
 }
 
 /* ========================================
@@ -130,10 +131,10 @@
    ======================================== */
 @media (max-width: 480px) {
   .button {
-    padding: 0.6rem;
-    min-width: 40px;
-    min-height: 40px;
-    font-size: 0.85rem;
+    padding: 0.75rem 0.9rem;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 0.95rem;
   }
 
   .icon {
@@ -143,7 +144,7 @@
   }
 
   .label {
-    display: none; /* Ocultar etiqueta en móvil para ahorrar espacio */
+    display: inline-block;
   }
 
   .button:hover {
@@ -161,7 +162,18 @@
   }
 
   .label {
-    display: none;
+    display: inline-block;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobileFullWidth {
+    width: 100%;
+    max-width: min(100%, 24rem);
+    min-height: 48px;
+    justify-content: center;
+    padding: 0.9rem 1rem;
+    font-size: 1rem;
   }
 }
 

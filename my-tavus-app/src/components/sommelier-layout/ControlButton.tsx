@@ -10,6 +10,7 @@ interface ControlButtonProps {
   title?: string; // Tooltip
   iconOnly?: boolean;
   plain?: boolean;
+  mobileFullWidth?: boolean;
 }
 
 /**
@@ -25,6 +26,7 @@ export const ControlButton: React.FC<ControlButtonProps> = ({
   title,
   iconOnly = false,
   plain = false,
+  mobileFullWidth = false,
 }) => {
   const ariaLabel = label || title || "control";
 
@@ -32,7 +34,7 @@ export const ControlButton: React.FC<ControlButtonProps> = ({
     <button
       className={`${styles.button} ${isActive ? styles.active : ""} ${
         disabled ? styles.disabled : ""
-      } ${iconOnly ? styles.iconOnly : ""} ${plain ? styles.plain : ""}`}
+      } ${iconOnly ? styles.iconOnly : ""} ${plain ? styles.plain : ""} ${mobileFullWidth ? styles.mobileFullWidth : ""}`}
       onClick={onClick}
       disabled={disabled}
       title={title || label}

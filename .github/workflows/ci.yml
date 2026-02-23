@@ -58,7 +58,7 @@ jobs:
       - run: pip install pytest pytest-cov
       - name: Run tests with coverage
         run: |
-          pytest -q --cov=backend --cov-report=xml --cov-fail-under=80 || true
+          pytest -q --cov=backend --cov-report=xml --cov-fail-under=80
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -77,7 +77,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: python, javascript
           queries: security-and-quality
@@ -99,21 +99,19 @@ jobs:
         run: |
           if [ -f my-tavus-app/package-lock.json ] || [ -f my-tavus-app/package.json ]; then
             cd my-tavus-app
-            npm ci --legacy-peer-deps || true
+            npm ci --legacy-peer-deps
             cd -
           fi
       
       - name: Run CodeQL analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
       
       - name: Run pip-audit for Python
-        continue-on-error: true
         run: |
           python -m pip install pip-audit
           python -m pip_audit --progress spinner
       
       - name: Run npm audit for Node
-        continue-on-error: true
         run: |
           if [ -f my-tavus-app/package.json ]; then
             cd my-tavus-app
@@ -135,3 +133,100 @@ jobs:
         run: |
           echo "✅ Security analysis and audits completed successfully"
           echo "All CodeQL checks passed."
+
+  frontend-e2e-gate:
+    name: Frontend E2E Gate (mobile critical)
+    runs-on: ubuntu-latest
+    needs: codeql
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Install frontend deps
+        run: |
+          cd my-tavus-app
+          npm ci --legacy-peer-deps
+
+      - name: Build frontend
+        run: |
+          cd my-tavus-app
+          npm run build
+
+      - name: Install Playwright browsers
+        run: |
+          cd my-tavus-app
+          npx playwright install --with-deps
+
+      - name: Start backend
+        run: |
+          nohup python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 &
+          sleep 3
+
+      - name: Start frontend preview
+        run: |
+          cd my-tavus-app
+          nohup npx vite preview --port 5173 &
+          sleep 3
+
+      - name: Run mobile critical Playwright tests
+        run: |
+          cd my-tavus-app
+          npx playwright test e2e/mobile-call-controls.spec.ts --project=mobile-safari-ios --project=mobile-chrome-android --project=mobile-samsung-internet-android --reporter=list
+          npx playwright test e2e/app-critical-flows.spec.ts --project=mobile-safari-ios --project=mobile-chrome-android --project=mobile-samsung-internet-android --reporter=list
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-mobile-gate
+          path: my-tavus-app/playwright-report
+
+  release-go-no-go:
+    name: Release Go/No-Go Gate
+    runs-on: ubuntu-latest
+    needs: [lint, test, security, codeql, frontend-e2e-gate]
+    if: ${{ always() }}
+    steps:
+      - name: Evaluate gate
+        env:
+          NEEDS_JSON: ${{ toJson(needs) }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+
+          needs = json.loads(os.environ["NEEDS_JSON"])
+          failed = {name: info.get("result") for name, info in needs.items() if info.get("result") != "success"}
+
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary_path:
+            with open(summary_path, "a", encoding="utf-8") as fh:
+              fh.write("## Release Gate\n")
+              if failed:
+                fh.write("❌ **NO-GO**\\n\\n")
+                fh.write("Fallaron checks obligatorios:\\n")
+                for name, result in failed.items():
+                  fh.write(f"- {name}: {result}\\n")
+              else:
+                fh.write("✅ **GO**\\n\\nTodos los checks obligatorios pasaron.\\n")
+
+          if failed:
+            print("NO-GO: checks fallidos:", failed)
+            raise SystemExit(1)
+
+          print("GO: todos los checks obligatorios pasaron")
+          PY

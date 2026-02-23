@@ -14,5 +14,15 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'mobile-chrome-android', use: { ...devices['Pixel 7'] } },
+    { name: 'mobile-safari-ios', use: { ...devices['iPhone 14'] } },
+    {
+      name: 'mobile-samsung-internet-android',
+      use: {
+        ...devices['Pixel 7'],
+        userAgent:
+          'Mozilla/5.0 (Linux; Android 13; SAMSUNG SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/24.0 Chrome/120.0.0.0 Mobile Safari/537.36',
+      },
+    },
   ],
 });

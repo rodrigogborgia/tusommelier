@@ -252,7 +252,8 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, backendReply
             aria-label="Cortar llamada"
             title="Cortar llamada"
           >
-            📞
+            <span aria-hidden="true">📞</span>
+            <span className={styles.floatingLeaveButtonText}>Cortar</span>
           </button>
         </div>
       </div>

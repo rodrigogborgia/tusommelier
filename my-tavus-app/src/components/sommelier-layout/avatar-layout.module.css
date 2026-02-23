@@ -182,6 +182,7 @@
   .controlsContainer {
     gap: 6px;
     padding: 0.1rem 0.25rem;
+    width: 100%;
   }
 }
 
