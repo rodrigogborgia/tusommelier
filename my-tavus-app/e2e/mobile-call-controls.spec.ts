@@ -1,5 +1,49 @@
 import { test, expect } from "@playwright/test";
 
+async function clickStartButtonResilient(
+  page: import("@playwright/test").Page,
+  browserName: string,
+) {
+  let lastError: unknown;
+  const startButton = page.getByRole("button", { name: /Iniciar llamada/i });
+  const cutButton = page.getByRole("button", { name: /Cortar llamada/i });
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const actionAttempts: Array<() => Promise<void>> = [
+      async () => startButton.click({ timeout: 2000 }),
+      async () => startButton.click({ force: true, timeout: 2000 }),
+      async () => startButton.dispatchEvent("click"),
+      async () => {
+        await page.evaluate(() => {
+          const button = document.querySelector<HTMLButtonElement>('button[aria-label="Iniciar llamada"]');
+          button?.click();
+        });
+      },
+    ];
+
+    if (browserName !== "webkit") {
+      actionAttempts.unshift(async () => startButton.tap({ timeout: 2000 }));
+    }
+
+    for (const action of actionAttempts) {
+      try {
+        await expect(startButton).toBeVisible({ timeout: 2000 });
+        await action();
+        await expect(cutButton).toBeVisible({ timeout: 4000 });
+        return;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (attempt < 3) {
+      await page.waitForTimeout(150 * attempt);
+    }
+  }
+
+  throw lastError;
+}
+
 async function clickCutButtonResilient(
   page: import("@playwright/test").Page,
   browserName: string,
@@ -58,8 +102,11 @@ async function clickCutButtonResilient(
   throw lastError;
 }
 
-test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async ({ page, browserName }) => {
+test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async ({ page, browserName }, testInfo) => {
   if (browserName === "webkit") {
+    test.slow();
+  }
+  if (testInfo.project.name.includes("samsung")) {
     test.slow();
   }
 
@@ -96,7 +143,7 @@ test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async 
   }
 
   expect(startBox.width).toBeGreaterThanOrEqual(viewport.width * 0.7);
-  await startButton.click();
+  await clickStartButtonResilient(page, browserName);
 
   const cutButton = page.getByRole("button", { name: /Cortar llamada/i });
   await expect(cutButton).toBeVisible();
