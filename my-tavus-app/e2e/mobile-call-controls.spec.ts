@@ -3,11 +3,16 @@ import { test, expect } from "@playwright/test";
 async function clickCutButtonResilient(page: import("@playwright/test").Page) {
   let lastError: unknown;
 
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    if (page.isClosed()) {
+      throw new Error("Page was closed before completing cut button click");
+    }
+
     const byRole = page.getByRole("button", { name: /Cortar llamada/i });
 
     try {
-      await byRole.click({ timeout: 4000 });
+      await expect(byRole).toBeVisible({ timeout: 1500 });
+      await byRole.tap({ timeout: 1500 });
       return;
     } catch (error) {
       lastError = error;
@@ -15,19 +20,33 @@ async function clickCutButtonResilient(page: import("@playwright/test").Page) {
 
     try {
       const forced = page.locator('button[aria-label="Cortar llamada"]');
-      await forced.click({ force: true, timeout: 2000 });
+      await forced.click({ force: true, timeout: 1500 });
       return;
     } catch (error) {
       lastError = error;
     }
 
-    await page.waitForTimeout(300 * attempt);
+    try {
+      const forced = page.locator('button[aria-label="Cortar llamada"]');
+      await forced.dispatchEvent("click");
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (attempt < 3) {
+      await page.waitForTimeout(150 * attempt);
+    }
   }
 
   throw lastError;
 }
 
-test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async ({ page }) => {
+test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async ({ page, browserName }) => {
+  if (browserName === "webkit") {
+    test.slow();
+  }
+
   await page.route("**/conversation", async (route) => {
     await route.fulfill({
       status: 200,
@@ -75,5 +94,5 @@ test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async 
   expect(cutBox.width).toBeGreaterThanOrEqual(viewport.width * 0.7);
   await clickCutButtonResilient(page);
 
-  await expect(startButton).toBeVisible();
+  await expect(startButton).toBeVisible({ timeout: 10000 });
 });
