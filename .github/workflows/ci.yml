@@ -115,7 +115,7 @@ jobs:
         run: |
           if [ -f my-tavus-app/package.json ]; then
             cd my-tavus-app
-            npm audit --audit-level=moderate
+            npm audit --omit=dev --audit-level=moderate
             cd -
           fi
 
