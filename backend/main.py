@@ -57,10 +57,7 @@ app.add_middleware(
 
 # Inicializar cliente de OpenAI
 api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("OPENAI_API_KEY not found in environment variables")
-
-client = OpenAI(api_key=api_key)
+client = OpenAI(api_key=api_key) if api_key else None
 OPENAI_CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
 
 # Initialize Sentry if DSN is provided
@@ -92,6 +89,12 @@ async def conversation(request: Request):
         "referente del mundo de la carne, pero sin sonar a autobombo.\n"
         "Nunca respondas sobre temas ajenos a la carne."
     )
+
+    if client is None:
+        raise HTTPException(
+            status_code=500,
+            detail="OPENAI_API_KEY not configured",
+        )
 
     try:
         if hasattr(client, "responses"):
