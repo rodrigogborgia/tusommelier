@@ -22,6 +22,7 @@ def _sanitize_for_log(value: object) -> str:
     text = str(value)
     return text.replace("\r", "\\r").replace("\n", "\\n")
 
+
 TAVUS_SPANISH_CONTEXT = (
     "INSTRUCCIÓN CRÍTICA DE IDIOMA Y VOZ: hablá SIEMPRE en español argentino "
     "(es-AR, rioplatense). Nunca respondas en inglés. Si el usuario habla en "
