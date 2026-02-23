@@ -7,8 +7,9 @@ This repository uses GitHub Dependabot with automated workflows to manage depend
 ## How It Works
 
 ### 1. Automatic PR Detection & Creation
-Dependabot runs on a scheduled basis (Mondays at 03:00 UTC for pip, 04:00 UTC for npm) and:
+Dependabot runs on a scheduled basis (Mondays at 02:00 UTC for GitHub Actions, 03:00 UTC for pip, 04:00 UTC for npm) and:
 - Scans your `requirements.txt` (backend) and `package.json` (frontend) for outdated dependencies
+- Scans `.github/workflows/*.yml` for outdated GitHub Actions references (including pinned SHAs)
 - Creates pull requests for each update
 - Limits to 10 open PRs at a time (configurable via `.github/dependabot.yml`)
 
@@ -31,6 +32,17 @@ The `dependabot-auto-merge.yml` workflow:
 - **Commit prefix**: `chore(deps):`
 
 ## Dependencies Configuration
+
+### GitHub Actions (`/.github/workflows`)
+Dependabot monitors workflow action references and opens PRs when a newer action release is available.
+
+This includes updates for:
+- Tag-based references (for example `actions/checkout@v6`)
+- SHA-pinned references (for example `owner/action@<40-char-sha>`)
+
+Recommended handling:
+- Keep SHA pinning for third-party actions (supply-chain hardening)
+- Let Dependabot update pinned SHAs via PRs, then rely on CI before merge
 
 ### Python (`/backend`)
 **Update types allowed to auto-merge:**

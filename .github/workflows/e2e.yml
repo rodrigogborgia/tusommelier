@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     services: {}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -47,13 +47,33 @@ jobs:
       - name: Start backend
         run: |
           nohup python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 &
-          sleep 3
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null; then
+              echo "Backend is ready"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Backend failed to become ready in time"
+              exit 1
+            fi
+            sleep 1
+          done
 
       - name: Start frontend preview
         run: |
           cd my-tavus-app
           nohup npx vite preview --port 5173 &
-          sleep 3
+          for i in {1..45}; do
+            if curl -fsS http://127.0.0.1:5173 >/dev/null || curl -fsS http://localhost:5173 >/dev/null; then
+              echo "Frontend preview is ready"
+              break
+            fi
+            if [ "$i" -eq 45 ]; then
+              echo "Frontend preview failed to become ready in time"
+              exit 1
+            fi
+            sleep 1
+          done
 
       - name: Run Playwright tests
         run: |
