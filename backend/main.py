@@ -205,10 +205,10 @@ async def create_tavus_conversation(request: Request):
     conversational_context = body.get("conversational_context")
     if conversational_context:
         payload["conversational_context"] = (
-            f"{conversational_context}\n\n{TAVUS_SPANISH_CONTEXT}"
+            f"{conversational_context}\n\n{TAVUS_MULTILINGUAL_CONTEXT}"
         )
     else:
-        payload["conversational_context"] = TAVUS_SPANISH_CONTEXT
+        payload["conversational_context"] = TAVUS_MULTILINGUAL_CONTEXT
 
     try:
         tavus_endpoint = f"{tavus_api_url.rstrip('/')}/v2/conversations"
