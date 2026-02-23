@@ -1,5 +1,32 @@
 import { test, expect } from "@playwright/test";
 
+async function clickCutButtonResilient(page: import("@playwright/test").Page) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const byRole = page.getByRole("button", { name: /Cortar llamada/i });
+
+    try {
+      await byRole.click({ timeout: 4000 });
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+
+    try {
+      const forced = page.locator('button[aria-label="Cortar llamada"]');
+      await forced.click({ force: true, timeout: 2000 });
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+
+    await page.waitForTimeout(300 * attempt);
+  }
+
+  throw lastError;
+}
+
 test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async ({ page }) => {
   await page.route("**/conversation", async (route) => {
     await route.fulfill({
@@ -46,15 +73,7 @@ test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async 
   }
 
   expect(cutBox.width).toBeGreaterThanOrEqual(viewport.width * 0.7);
-  try {
-    await cutButton.click({ timeout: 5000 });
-  } catch {
-    // WebKit mobile can report transient "not stable" / detached during click.
-    // Fallback to DOM click keeps functional assertion while avoiding flaky retries.
-    await cutButton.evaluate((element) => {
-      (element as HTMLButtonElement).click();
-    });
-  }
+  await clickCutButtonResilient(page);
 
   await expect(startButton).toBeVisible();
 });
