@@ -173,7 +173,9 @@ def _create_tavus_conversation_with_fallback(
 
     payload_without_voice, removed_voice_keys = _without_voice_overrides(payload)
     if removed_voice_keys:
-        attempt_payloads.append((payload_without_voice, "fallback without voice overrides"))
+        attempt_payloads.append(
+            (payload_without_voice, "fallback without voice overrides")
+        )
         if should_retry_with_spanish:
             attempt_payloads.append(
                 (
@@ -200,11 +202,13 @@ def _create_tavus_conversation_with_fallback(
             )
         elif label == "fallback without voice overrides":
             logger.warning(
-                "Tavus rechazó overrides de voz en conversation properties. Reintentando sin esos campos.",
+                "Tavus rechazó overrides de voz en conversation properties. "
+                "Reintentando sin esos campos.",
             )
         elif label == "fallback spanish + without voice overrides":
             logger.warning(
-                "Tavus rechazó request inicial. Reintentando con language='spanish' y sin overrides de voz.",
+                "Tavus rechazó request inicial. Reintentando con "
+                "language='spanish' y sin overrides de voz.",
             )
 
         response = requests.post(
@@ -220,7 +224,10 @@ def _create_tavus_conversation_with_fallback(
         last_label = label
 
     if last_response is None:
-        raise HTTPException(status_code=502, detail="No Tavus request attempt was executed")
+        raise HTTPException(
+            status_code=502,
+            detail="No Tavus request attempt was executed",
+        )
 
     detail_prefix = (
         f"Tavus error ({last_label}):"
