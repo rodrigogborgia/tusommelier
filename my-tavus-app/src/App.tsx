@@ -9,6 +9,25 @@ import {
   saveConversationalContext 
 } from "./components/cvi/api";
 
+const parseVoicePropertiesFromEnv = (): Record<string, unknown> => {
+  const rawVoiceProperties = import.meta.env.VITE_TAVUS_VOICE_PROPERTIES_JSON;
+  if (!rawVoiceProperties) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(rawVoiceProperties);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+    console.warn("VITE_TAVUS_VOICE_PROPERTIES_JSON debe ser un objeto JSON");
+    return {};
+  } catch (error) {
+    console.warn("No se pudo parsear VITE_TAVUS_VOICE_PROPERTIES_JSON", error);
+    return {};
+  }
+};
+
 const App: React.FC = () => {
   const showLayoutVerification =
     import.meta.env.VITE_SHOW_LAYOUT_VERIFICATION !== "false";
@@ -61,6 +80,8 @@ const App: React.FC = () => {
   };
 
   const BACKEND_URL = getBackendUrl();
+  const configuredLanguage = import.meta.env.VITE_TAVUS_LANGUAGE || "spanish";
+  const configuredVoiceProperties = parseVoicePropertiesFromEnv();
 
   // Verificar si existe contexto guardado al montar
   useEffect(() => {
@@ -99,6 +120,10 @@ const App: React.FC = () => {
         import.meta.env.VITE_REPLICA_ID || "rf4e9d9790f0",
         import.meta.env.VITE_PERSONA_ID || "pcb7a34da5fe",
         savedContext || undefined,
+        {
+          language: configuredLanguage,
+          voiceProperties: configuredVoiceProperties,
+        },
       );
 
       setConversationUrl(data.conversation_url);

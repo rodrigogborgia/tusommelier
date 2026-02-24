@@ -97,11 +97,21 @@ jobs:
             VENV_DIR="${APP_DIR}/.venv"
             VENV_PY="${VENV_DIR}/bin/python3"
             VENV_PIP="${VENV_DIR}/bin/pip"
+            ENV_DEST_DIR="/etc/tusommelier"
+            ENV_DEST_FILE="${ENV_DEST_DIR}/secrets.env"
 
             cd "${APP_DIR}"
 
             git fetch origin main
             git reset --hard origin/main
+
+            echo "[deploy] Configurando secrets del backend fuera del repo"
+            if [ -f "${ENV_DEST_FILE}" ]; then
+              echo "[deploy] Usando secrets existentes en ${ENV_DEST_FILE}"
+            else
+              echo "Missing backend env file. Create ${ENV_DEST_FILE} on server (outside repo)."
+              exit 1
+            fi
 
             echo "[deploy] Verificando runtime Python"
             if ! command -v python3 >/dev/null 2>&1; then

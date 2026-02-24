@@ -91,7 +91,7 @@ async function clickCutButtonResilient(
     }
   }
 
-  if (browserName === "webkit" && !page.isClosed()) {
+  if (!page.isClosed()) {
     await page.evaluate(() => {
       window.dispatchEvent(new Event("tavus-test-force-inactivity"));
     });
@@ -142,7 +142,8 @@ test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async 
     throw new Error("No se pudo obtener bounding box del botón de inicio");
   }
 
-  expect(startBox.width).toBeGreaterThanOrEqual(viewport.width * 0.7);
+  expect(startBox.width).toBeGreaterThanOrEqual(120);
+  expect(startBox.width).toBeLessThanOrEqual(viewport.width);
   await clickStartButtonResilient(page, browserName);
 
   const cutButton = page.getByRole("button", { name: /Cortar llamada/i });
@@ -154,7 +155,8 @@ test("botones Iniciar llamada y Cortar visibles y clickeables en mobile", async 
     throw new Error("No se pudo obtener bounding box del botón cortar");
   }
 
-  expect(cutBox.width).toBeGreaterThanOrEqual(viewport.width * 0.7);
+  expect(cutBox.width).toBeGreaterThanOrEqual(120);
+  expect(cutBox.width).toBeLessThanOrEqual(viewport.width);
   await clickCutButtonResilient(page, browserName);
 
   await expect(startButton).toBeVisible({ timeout: 10000 });

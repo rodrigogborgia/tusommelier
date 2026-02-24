@@ -45,8 +45,11 @@ permissions:
 
 ## Secrets requeridos para Deploy Production
 
-- `SERVER_HOST`
-- `SERVER_USER`
-- `DEPLOY_KEY`
+- `HOST`
+- `USERNAME`
+- `KEY`
+
+Además, el backend requiere `/etc/tusommelier/secrets.env` en el servidor
+(fuera del repo).
 
 No se requiere Docker Hub ni GHCR para el deploy actual.

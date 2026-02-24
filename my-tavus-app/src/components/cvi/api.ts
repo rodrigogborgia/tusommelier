@@ -1,11 +1,20 @@
 // src/components/cvi/api.ts
 
+type ConversationOptions = {
+  language?: string;
+  voiceProperties?: Record<string, unknown>;
+};
+
 export async function createConversation(
   backendUrl: string,
   replicaId: string,
   personaId: string,
   conversationalContext?: string,
+  options?: ConversationOptions,
 ) {
+  const configuredLanguage = options?.language || "spanish";
+  const voiceProperties = options?.voiceProperties || {};
+
   const payload: any = {
     replica_id: replicaId,
     persona_id: personaId,
@@ -14,9 +23,13 @@ export async function createConversation(
     properties: {
       participant_left_timeout: 0,
       participant_absent_timeout: 120,
-      language: "spanish",
+      language: configuredLanguage,
     },
   };
+
+  if (Object.keys(voiceProperties).length > 0) {
+    payload.voice_properties = voiceProperties;
+  }
 
   // Si hay contexto previo, incluirlo
   if (conversationalContext) {

@@ -10,19 +10,39 @@ Este proyecto despliega en servidor por SSH con `systemd` + `nginx`, sin contene
 
 ## Secrets requeridos en GitHub
 
-- `SERVER_HOST`
-- `SERVER_USER`
-- `DEPLOY_KEY`
+- `HOST`
+- `USERNAME`
+- `KEY`
 
 ## Qué hace el deploy de producción
 
 1. `git reset --hard origin/main`
+2. Verifica existencia de `/etc/tusommelier/secrets.env`
 2. Crea/actualiza `.venv` e instala `backend/requirements.txt`
 3. Ejecuta `npm ci` y `npm run build` en `my-tavus-app`
 4. Copia `my-tavus-app/dist` a `/var/www/frontend`
 5. Instala/actualiza unidad `systemd` `tusommelier-backend`
 6. Valida y recarga `nginx`
 7. Reinicia `tusommelier-backend`
+
+## Secrets fuera del repo (recomendado)
+
+- La unidad systemd lee variables desde `/etc/tusommelier/secrets.env`.
+- Ese archivo queda fuera de Git, por lo que `git reset --hard` no lo pisa.
+- Podés gestionarlo de dos maneras:
+	- Manual en servidor (`sudo nano /etc/tusommelier/secrets.env`).
+
+Ejemplo mínimo de `/etc/tusommelier/secrets.env`:
+
+```dotenv
+TAVUS_API_KEY=...
+TAVUS_PERSONA_ID=...
+TAVUS_REPLICA_ID=...
+TAVUS_LANGUAGE=spanish
+CARTESIA_API_KEY=...
+OPENAI_API_KEY=...
+OPENAI_CHAT_MODEL=gpt-4o-mini
+```
 
 ## Requisito de Node.js en servidor
 

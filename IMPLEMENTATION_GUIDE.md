@@ -145,7 +145,18 @@ Asegurate de que `.env` en frontend tenga:
 VITE_TAVUS_API_KEY=your_key_here
 VITE_REPLICA_ID=rf4e9d9790f0
 VITE_PERSONA_ID=pcb7a34da5fe
+VITE_TAVUS_LANGUAGE=spanish
+VITE_TAVUS_VOICE_PROPERTIES_JSON={"tts_provider":"cartesia","cartesia_voice_id":"tu_voice_id"}
 VITE_INACTIVITY_LIMIT=120  # en segundos (opcional, default 120)
+```
+
+Y en `config/secrets.env` del backend, podés configurar defaults de voz:
+
+```env
+TAVUS_TTS_PROVIDER=cartesia
+TAVUS_CARTESIA_VOICE_ID=tu_voice_id
+# Opcional: objeto JSON para propiedades adicionales que Tavus acepte
+TAVUS_VOICE_PROPERTIES_JSON={"tts_voice_id":"tu_voice_id"}
 ```
 
 ---
